@@ -31,7 +31,7 @@ to trust the words presented within.
 
 We also provide this information to you so that you can have an at-a-glance look at how
 Z-Levels are arranged. It is extremely ill-advised to ever use the location of a Z-Level
-to assign traits to it or use it in coding. Use Z-Traits (ZTRAITs) for these. 
+to assign traits to it or use it in coding. Use Z-Traits (ZTRAITs) for these.
 
 If you want to start toying around with Z-Levels, do not take these words for fact.
 Always compile, always use that verb, and always make sure that it works for what you want to do.
@@ -185,6 +185,37 @@ Always compile, always use that verb, and always make sure that it works for wha
 #define BIOME_LOWMEDIUM_HUMIDITY "lowmedium_humidity"
 #define BIOME_HIGHMEDIUM_HUMIDITY "highmedium_humidity"
 #define BIOME_HIGH_HUMIDITY "high_humidity"
+
+//lavaland perlin
+
+#define BIOME_LOW_CORRUPTION "low_corruption"
+#define BIOME_LOWMEDIUM_CORRUPTION "lowmedium_corruption"
+#define BIOME_MEDIUM_CORRUPTION "medium_corruption"
+#define BIOME_HIGHMEDIUM_CORRUPTION "highmedium_corruption"
+#define BIOME_HIGH_CORRUPTION "high_corruption"
+
+#define BIOME_SERENE "low_wildness"
+#define BIOME_PEACEFUL "lowmedium_wildness"
+#define BIOME_NEUTRAL "medium_wildness"
+#define BIOME_UNTAMED "highmedium_wildness"
+#define BIOME_WILD "high_wildness"
+
+#define  WILDNESS_START_X_LEVEL 35
+#define  WILDNESS_MID1_X_LEVEL 74
+#define  WILDNESS_MID2_X_LEVEL 113
+#define  WILDNESS_MID3_X_LEVEL 152
+#define  WILDNESS_MID4_X_LEVEL 191
+#define  WILDNESS_END_X_LEVEL 230
+
+#define  CORRUPTION_START_Y_LEVEL 35
+#define  CORRUPTION_MID1_Y_LEVEL 74
+#define  CORRUPTION_MID2_Y_LEVEL 113
+#define  CORRUPTION_MID3_Y_LEVEL 152
+#define  CORRUPTION_MID4_Y_LEVEL 191
+#define  CORRUPTION_END_Y_LEVEL 230
+
+///the random offset applied to square coordinates, causes intermingling at biome borders
+#define BIOME_RANDOM_SQUARE_DRIFT 2
 
 // Bluespace shelter deploy checks for survival capsules
 /// Shelter spot is allowed
