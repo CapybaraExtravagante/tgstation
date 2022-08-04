@@ -4,10 +4,16 @@
 
 /datum/biome/bileworm_superhive
 	turf_type = /turf/open/misc/grass/jungle
-	flora_types = list(/obj/structure/flora/grass/jungle/a/style_random,/obj/structure/flora/grass/jungle/b/style_random, /obj/structure/flora/tree/jungle/style_random, /obj/structure/flora/rock/pile/jungle/style_random, /obj/structure/flora/bush/jungle/a/style_random, /obj/structure/flora/bush/jungle/b/style_random, /obj/structure/flora/bush/jungle/c/style_random, /obj/structure/flora/bush/large/style_random, /obj/structure/flora/rock/pile/jungle/large/style_random)
+	flora_types = list(
+		/obj/structure/flora/rock/pile/jungle/style_random = 1,
+	)
 	flora_density = 15
+	fauna_types = list(
+		/mob/living/basic/bileworm,
+	)
+	fauna_density = 5
 
-/datum/map_generator/cave_generator/lavaland/meaty
+/datum/map_generator/cave_generator/lavaland/bileworm_superhive
 	name = "Bileworm Superhive"
-	open_turf_types = list(/turf/open/floor/plating/asteroid/basalt/lava_land_surface = 1)
-	closed_turf_types =  list(/turf/closed/wall/material/meat = 1)
+	open_turf_types = list(/turf/open/floor/mineral/wax/lavaland_atmos = 1)
+	closed_turf_types =  list(/turf/closed/wall/material/wax = 1)
