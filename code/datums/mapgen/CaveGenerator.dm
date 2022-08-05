@@ -137,4 +137,4 @@
 
 					new picked_mob(new_open_turf)
 		CHECK_TICK
-		finish_generation()
+	finish_generation()

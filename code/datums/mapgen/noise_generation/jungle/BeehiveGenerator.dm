@@ -10,7 +10,7 @@
 
 	layer_thresholds = list(
 		PERLIN_LAYER_HEIGHT = list(
-			BEEHIVE_CAVES = 0.6,
+			BEEHIVE_CAVES = 0.3,
 			BEEHIVE_CORE = 0
 		),
 	)
@@ -35,7 +35,7 @@
 
 /area/ruin/beehive
 	name = "Beehive"
-	area_flags = BLOBS_ALLOWED | NO_ALERTS
+	area_flags = BLOBS_ALLOWED | NO_ALERTS | CAVES_ALLOWED
 	map_generator = /datum/map_generator/scalar_generator/beehive
 
 
