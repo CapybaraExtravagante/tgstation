@@ -176,8 +176,8 @@ Always compile, always use that verb, and always make sure that it works for wha
 #define PERLIN_LAYER_HUMIDITY "perlin_humidity"
 #define PERLIN_LAYER_HEAT "perlin_heat"
 
-#define BIOME_NO_MOUNTAINS "biome_no_mountains"
-#define BIOME_MOUNTAINS "biome_mountains"
+#define BIOME_IS_NOT_MOUNTAINS "biome_no_mountains"
+#define BIOME_IS_MOUNTAINS "biome_mountains"
 
 #define BIOME_LOW_HEAT "low_heat"
 #define BIOME_LOWMEDIUM_HEAT "lowmedium_heat"

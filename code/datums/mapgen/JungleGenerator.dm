@@ -26,7 +26,7 @@
 	)
 
 	possible_terrains = list(
-		BIOME_NO_MOUNTAINS = list(
+		BIOME_IS_NOT_MOUNTAINS = list(
 			BIOME_LOW_HEAT = list(
 				BIOME_LOW_HUMIDITY = /datum/terrain/plains,
 				BIOME_LOWMEDIUM_HUMIDITY = /datum/terrain/mudlands,
@@ -52,7 +52,7 @@
 				BIOME_HIGH_HUMIDITY = /datum/terrain/jungle/deep
 				)
 			),
-		BIOME_MOUNTAINS = /datum/terrain/mountain
+		BIOME_IS_MOUNTAINS = /datum/terrain/mountain
 		)
 
 

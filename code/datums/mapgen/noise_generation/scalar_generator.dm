@@ -26,6 +26,7 @@
 
 		var/drift_x = (gen_turf.x + rand(-random_drift, random_drift))
 		var/drift_y = (gen_turf.y + rand(-random_drift, random_drift))
+		var/list/current_list_to_check = possible_terrains
 
 		for(var/layer_name in layer_thresholds)
 			var/datum/generator_scalar_layer/generator_layer_instance = generation_layers[layer_name]
@@ -38,11 +39,11 @@
 			for(var/possible_range in layer_specific_thresholds)
 				var/threshold = layer_specific_thresholds[possible_range]
 				if(layer_scalar > threshold)
-					selected_threshold = possible_terrains[threshold]
-					return
-
+					selected_threshold = current_list_to_check[possible_range]
+					break
 
 			if(islist(selected_threshold)) //We just hit another list; which means we go to the next layer.
+				current_list_to_check = selected_threshold
 				continue
 
 			if(ispath(selected_threshold, /datum/terrain))

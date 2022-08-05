@@ -15,11 +15,11 @@
 /datum/terrain/proc/generate_turf(turf/gen_turf)
 	gen_turf.ChangeTurf(turf_type, null, CHANGETURF_DEFER_CHANGE)
 	if(length(fauna_types) && prob(fauna_density))
-		var/mob/fauna = pick_weight(fauna_types)
+		var/mob/fauna = pick(fauna_types)
 		new fauna(gen_turf)
 
 	if(length(flora_types) && prob(flora_density))
-		var/obj/structure/flora = pick_weight(flora_types)
+		var/obj/structure/flora = pick(flora_types)
 		new flora(gen_turf)
 
 /datum/terrain/mudlands
