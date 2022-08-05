@@ -1,5 +1,6 @@
 
 /datum/map_generator/scalar_generator
+	name = "Scalar Generator"
 	///A 2D list of the layer, to a /datum/generator_scalar_layer that returns a scalar for the layer. (0 to 1)
 	var/list/generation_layers = list()
 
@@ -22,6 +23,10 @@
 ///Seeds the rust-g perlin noise with a random number.
 /datum/map_generator/scalar_generator/generate_terrain(list/turfs)
 	. = ..()
+
+	///Assoc list of generation type to all the turfs that need be taken care of
+	var/list/generation_turfs = list()
+
 	for(var/turf/gen_turf as anything in turfs)
 
 		var/drift_x = (gen_turf.x + rand(-random_drift, random_drift))
@@ -38,7 +43,7 @@
 
 			for(var/possible_range in layer_specific_thresholds)
 				var/threshold = layer_specific_thresholds[possible_range]
-				if(layer_scalar > threshold)
+				if(layer_scalar >= threshold)
 					selected_threshold = current_list_to_check[possible_range]
 					break
 
@@ -46,12 +51,26 @@
 				current_list_to_check = selected_threshold
 				continue
 
-			if(ispath(selected_threshold, /datum/terrain))
-				var/datum/terrain/selected_terrain = SSmapping.terrains[selected_threshold]
-				selected_terrain.generate_turf(gen_turf)
+			else if(ispath(selected_threshold, /datum/terrain) || ispath(selected_threshold, /datum/map_generator))
+				generation_turfs[selected_threshold] += list(gen_turf)
 				break
 		CHECK_TICK
-	return ..()
+
+	for(var/generation_type in generation_turfs)
+		if(ispath(generation_type, /datum/terrain)) //It's a terrain. Apply it to all the turfs
+
+			var/datum/terrain/selected_terrain = SSmapping.terrains[generation_type]
+			var/list/turfs_of_this_terrain = generation_turfs[generation_type]
+
+			for(var/turf/turf_to_override as anything in turfs_of_this_terrain)
+				selected_terrain.generate_turf(turf_to_override)
+
+
+		else if(ispath(generation_type, /datum/map_generator))
+			var/datum/map_generator/map_generator_instance = new generation_type()
+
+			map_generator_instance.generate_terrain(generation_turfs[generation_type])
+	finish_generation()
 
 /turf/open/genturf
 	name = "ungenerated turf"

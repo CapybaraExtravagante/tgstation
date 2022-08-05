@@ -1,5 +1,6 @@
 
 /datum/map_generator/scalar_generator/jungle_generator
+	name = "Jungle Generator"
 
 	generation_layers = list(
 		PERLIN_LAYER_HEAT = /datum/generator_scalar_layer/perlin_noise,

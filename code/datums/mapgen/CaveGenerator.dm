@@ -47,7 +47,6 @@
 
 /datum/map_generator/cave_generator/generate_terrain(list/turfs)
 	. = ..()
-	var/start_time = REALTIMEOFDAY
 	string_gen = rustg_cnoise_generate("[initial_closed_chance]", "[smoothing_iterations]", "[birth_limit]", "[death_limit]", "[world.maxx]", "[world.maxy]") //Generate the raw CA data
 
 	for(var/i in turfs) //Go through all the turfs and generate them
@@ -138,7 +137,4 @@
 
 					new picked_mob(new_open_turf)
 		CHECK_TICK
-
-	var/message = "[name] finished in [(REALTIMEOFDAY - start_time)/10]s!"
-	to_chat(world, span_boldannounce("[message]"))
-	log_world(message)
+		finish_generation()
