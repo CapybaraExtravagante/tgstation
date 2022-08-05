@@ -250,3 +250,13 @@
 	suffix = "lavaland_surface_elephant_graveyard.dmm"
 	allow_duplicates = FALSE
 	cost = 10
+
+
+/datum/map_template/ruin/lavaland/beehive
+	name = "Beehive"
+	id = "beehive"
+	description = "A strange beehive."
+	suffix = "lavaland_surface_beehive.dmm"
+	cost = 0
+	always_place = TRUE
+	allow_duplicates = FALSE
