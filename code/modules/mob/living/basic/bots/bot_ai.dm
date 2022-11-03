@@ -230,7 +230,6 @@
 	controller.blackboard[target_key] = target
 	controller.CancelActions()
 
-
 /datum/ai_behavior/scan/constant
 	should_finish_after_scan = FALSE
 

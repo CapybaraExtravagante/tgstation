@@ -14,7 +14,6 @@
 	maints_access_required = list(ACCESS_ROBOTICS, ACCESS_JANITOR)
 	radio_key = /obj/item/encryptionkey/headset_service
 	radio_channel = RADIO_CHANNEL_SERVICE //Service
-	bot_mode_flags = BOT_MODE_ON | BOT_MODE_REMOTE_ENABLED
 	bot_type = CLEAN_BOT
 	hackables = "cleaning software"
 
@@ -344,4 +343,4 @@
 
 /mob/living/basic/bot/cleanbot/proc/finish_cleaning()
 	update_appearance(UPDATE_ICON)
-	SEND_SIGNAL(src, COMSIG_AINOTIFY_CLEANBOT_FINISH_CLEANING, ai_controller, BB_CLEAN_BOT_TARGET, BB_TARGETTING_DATUM)
+	SEND_SIGNAL(src, COMSIG_AINOTIFY_CLEANBOT_FINISH_CLEANING, ai_controller)

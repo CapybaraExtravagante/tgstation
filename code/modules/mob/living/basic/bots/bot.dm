@@ -118,6 +118,7 @@
 	else
 		return mode
 
+///Drops a specified item, as if it was held by the bot before this.
 /mob/living/basic/bot/proc/drop_part(obj/item/drop_item, dropzone)
 	var/obj/item/item_to_drop
 	if(ispath(drop_item))
@@ -141,6 +142,7 @@
 		dropped_gun.update_appearance()
 
 
+///Turns on the bot, makes sure to remove traits and update anything related to that!
 /mob/living/basic/bot/proc/turn_on()
 	if(stat)
 		return FALSE
@@ -154,8 +156,10 @@
 	diag_hud_set_botstat()
 	return TRUE
 
+///Turns off the bot, makes sure to remove traits and update anything related to that!
 /mob/living/basic/bot/proc/turn_off()
 	bot_mode_flags &= ~BOT_MODE_ON
+	reset_bot()
 	ADD_TRAIT(src, TRAIT_INCAPACITATED, POWER_LACK_TRAIT)
 	ADD_TRAIT(src, TRAIT_IMMOBILIZED, POWER_LACK_TRAIT)
 	ADD_TRAIT(src, TRAIT_HANDS_BLOCKED, POWER_LACK_TRAIT)
@@ -163,6 +167,7 @@
 	balloon_alert(src, "turned off")
 	update_appearance()
 
+///Handles preparing a bot for a call.
 /mob/living/basic/bot/proc/call_bot(caller, turf/waypoint, message = TRUE)
 	if(!istype(ai_controller, /datum/ai_controller/basic_controller/bot))
 		return //Cannot be called, we have no AI controller
@@ -171,6 +176,7 @@
 
 	bot_controller.call_bot(caller, waypoint, message)
 
+///Resets the bots to its defaults, mostly important for cancelling summons
 /mob/living/basic/bot/proc/reset_bot(caller, turf/waypoint, message = TRUE)
 	if(!istype(ai_controller, /datum/ai_controller/basic_controller/bot))
 		return //Cannot be called, we have no AI controller
@@ -186,9 +192,11 @@
 		if(D.check_access(access_card))
 			D.open()
 
+///Resets bot back to its default access.
 /mob/living/basic/bot/proc/reset_bot_access()
 	access_card.set_access(base_access)
 
+///Checks if user has access to the bot's control panel.
 /mob/living/basic/bot/proc/check_access(mob/living/user, obj/item/card/id)
 	if(user.has_unlimited_silicon_privilege || isAdminGhostAI(user)) // Silicon and Admins always have access.
 		return TRUE
@@ -214,6 +222,7 @@
 	explode()
 	return ..()
 
+///Blows the bot up, simple as. Sometimes drops the bots arm.
 /mob/living/basic/bot/proc/explode()
 	visible_message(span_boldnotice("[src] blows apart!"))
 	do_sparks(3, TRUE, src)
@@ -315,7 +324,6 @@
 
 		if("ejectpai")
 			ejectpairemote(user)
-	return
 
 
 ///The message a client sees when it gets a PDA command
@@ -386,6 +394,7 @@
 			bot_cover_flags ^= BOT_COVER_OPEN
 		if("patrol")
 			bot_mode_flags ^= BOT_MODE_AUTOPATROL
+			reset_bot()
 		if("airplane")
 			bot_mode_flags ^= BOT_MODE_REMOTE_ENABLED
 		if("hack")
@@ -407,7 +416,8 @@
 				to_chat(usr, span_notice("You eject [paicard] from [initial(src.name)]."))
 				ejectpai(usr)
 
-/mob/living/basic/bot/proc/topic_denied(mob/user) //Access check proc for bot topics! Remember to place in a bot's individual Topic if desired.
+///Access check proc for bot topics! Remember to place in a bot's individual Topic if desired.
+/mob/living/basic/bot/proc/topic_denied(mob/user)
 	if(!user.canUseTopic(src, !issilicon(user)))
 		return TRUE
 	// 0 for access, 1 for denied.
@@ -566,25 +576,28 @@
 	log_combat(user, paicard.pai, "uploaded to [initial(src.name)],")
 	return TRUE
 
+
+///Ejects the current PAI inside of this bot.
 /mob/living/basic/bot/proc/ejectpai(mob/user = null, announce = TRUE)
-	if(paicard)
-		if(mind && paicard.pai)
-			mind.transfer_to(paicard.pai)
-		else if(paicard.pai)
-			paicard.pai.key = key
-		else
-			ghostize(0) // The pAI card that just got ejected was dead.
-		key = null
-		paicard.forceMove(loc)
-		if(user)
-			log_combat(user, paicard.pai, "ejected from [initial(src.name)],")
-		else
-			log_combat(src, paicard.pai, "ejected")
-		if(announce)
-			to_chat(paicard.pai, span_notice("You feel your control fade as [paicard] ejects from [initial(src.name)]."))
-		paicard = null
-		name = initial(src.name)
-		faction = initial(faction)
+	if(!paicard)
+		return
+	if(mind && paicard.pai)
+		mind.transfer_to(paicard.pai)
+	else if(paicard.pai)
+		paicard.pai.key = key
+	else
+		ghostize(0) // The pAI card that just got ejected was dead.
+	key = null
+	paicard.forceMove(loc)
+	if(user)
+		log_combat(user, paicard.pai, "ejected from [initial(src.name)],")
+	else
+		log_combat(src, paicard.pai, "ejected")
+	if(announce)
+		to_chat(paicard.pai, span_notice("You feel your control fade as [paicard] ejects from [initial(src.name)]."))
+	paicard = null
+	name = initial(src.name)
+	faction = initial(faction)
 
 /mob/living/basic/bot/proc/ejectpairemote(mob/user)
 	if(check_access(user) && paicard)

@@ -131,6 +131,8 @@
 	else
 		return "[mode]"
 
+
+///Turns on the bot, makes sure to remove traits and update anything related to that!
 /mob/living/simple_animal/bot/proc/turn_on()
 	if(stat)
 		return FALSE
@@ -144,6 +146,7 @@
 	diag_hud_set_botstat()
 	return TRUE
 
+///Turns off the bot, makes sure to remove traits and update anything related to that!
 /mob/living/simple_animal/bot/proc/turn_off()
 	bot_mode_flags &= ~BOT_MODE_ON
 	ADD_TRAIT(src, TRAIT_INCAPACITATED, POWER_LACK_TRAIT)
@@ -463,6 +466,7 @@
 		internal_radio.talk_into(src, message, message_mods[RADIO_EXTENSION], spans, language, message_mods)
 		return REDUCE_RANGE
 
+///Drops a specified item held by the bot
 /mob/living/simple_animal/bot/proc/drop_part(obj/item/drop_item, dropzone)
 	var/obj/item/item_to_drop
 	if(ispath(drop_item))
@@ -595,6 +599,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 	if(mode != BOT_SUMMON && mode != BOT_RESPONDING)
 		access_card.set_access(prev_access)
 
+///Calls the bot (to come over) to the specified caller.
 /mob/living/simple_animal/bot/proc/call_bot(caller, turf/waypoint, message = TRUE)
 	bot_reset() //Reset a bot before setting it to call mode.
 
@@ -624,7 +629,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 		calling_ai = null
 		set_path(null)
 
-/mob/living/simple_animal/bot/proc/call_mode() //Handles preparing a bot for a call, as well as calling the move proc.
+/mob/living/simple_animal/bot/proc/call_mode()
 //Handles the bot's movement during a call.
 	var/success = bot_move(ai_waypoint, 3)
 	if(!success)
@@ -632,6 +637,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 			to_chat(calling_ai, "[icon2html(src, calling_ai)] [get_turf(src) == ai_waypoint ? span_notice("[src] successfully arrived to waypoint.") : span_danger("[src] failed to reach waypoint.")]")
 			calling_ai = null
 		bot_reset()
+
 
 /mob/living/simple_animal/bot/proc/bot_reset()
 	if(calling_ai) //Simple notification to the AI if it called a bot. It will not know the cause or identity of the bot.
@@ -853,12 +859,12 @@ Pass a positive integer as an argument to override a bot's default speed.
 	calc_summon_path()
 	tries = 0
 
-/mob/living/simple_animal/bot/Bump(atom/A) //Leave no door unopened!
+/mob/living/simple_animal/bot/Bump(atom/bumped_atom) //Leave no door unopened!
 	. = ..()
-	if((istype(A, /obj/machinery/door/airlock) || istype(A, /obj/machinery/door/window)) && (!isnull(access_card)))
-		var/obj/machinery/door/D = A
-		if(D.check_access(access_card))
-			D.open()
+	if((istype(bumped_atom, /obj/machinery/door/airlock) || istype(bumped_atom, /obj/machinery/door/window)) && (!isnull(access_card)))
+		var/obj/machinery/door/bumped_door = bumped_atom
+		if(bumped_door.check_access(access_card))
+			bumped_door.open()
 			frustration = 0
 
 /mob/living/simple_animal/bot/ui_data(mob/user)
@@ -922,7 +928,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 				bot_reset()
 		if("eject_pai")
 			if(paicard)
-				to_chat(usr, span_notice("You eject [paicard] from [initial(src.name)]."))
+				to_chat(usr, span_notice("You eject [paicard] from [initial(name)]."))
 				ejectpai(usr)
 
 /mob/living/simple_animal/bot/update_icon_state()
@@ -992,7 +998,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 /mob/living/simple_animal/bot/Login()
 	. = ..()
 	if(!. || !client)
-		return FALSE
+		return
 	// If we have any bonus player accesses, add them to our internal ID card.
 	if(length(player_access))
 		access_card.add_access(player_access)
@@ -1005,7 +1011,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 /mob/living/simple_animal/bot/revive(full_heal = FALSE, admin_revive = FALSE)
 	if(..())
 		update_appearance()
-		. = TRUE
+		return TRUE
 
 /mob/living/simple_animal/bot/ghost()
 	if(stat != DEAD) // Only ghost if we're doing this while alive, the pAI probably isn't dead yet.
