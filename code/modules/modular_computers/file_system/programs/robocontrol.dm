@@ -27,11 +27,8 @@
 	var/list/botlist = list()
 	var/list/mulelist = list()
 
-	var/obj/item/computer_hardware/card_slot/card_slot = computer ? computer.all_components[MC_CARD] : null
-	data["have_id_slot"] = !!card_slot
 	if(computer)
-		var/obj/item/card/id/id_card = card_slot ? card_slot.stored_card : ""
-		data["id_owner"] = id_card
+		data["id_owner"] = computer.computer_id_slot || ""
 
 	botcount = 0
 
@@ -106,12 +103,7 @@
 	if(.)
 		return
 	var/mob/current_user = ui.user
-	var/obj/item/computer_hardware/card_slot/card_slot
-	var/obj/item/card/id/id_card
-	if(computer)
-		card_slot = computer.all_components[MC_CARD]
-		if(card_slot)
-			id_card = card_slot.stored_card
+	var/obj/item/card/id/id_card = computer?.computer_id_slot
 
 	var/list/standard_actions = list(
 		"patroloff",
@@ -133,25 +125,20 @@
 	)
 	var/mob/living/simple_animal/bot/bot = locate(params["robot"]) in GLOB.bots_list
 
-	if(bot)
-		if (action in standard_actions)
-			bot.bot_control(action, current_user, current_access)
-		if (action in MULE_actions)
-			bot.bot_control(action, current_user, current_access, TRUE)
-
+	if(istype(bot, /mob/living/simple_animal/bot))
 		switch(action)
 			if("summon")
-				bot.bot_control(action, current_user, id_card ? id_card.access : current_access)
+				simple_bot.bot_control(action, current_user, id_card ? id_card.access : current_access)
 			if("ejectcard")
-				if(!computer || !card_slot)
+				if(!computer || !computer.computer_id_slot)
 					return
 				if(id_card)
 					GLOB.data_core.manifest_modify(id_card.registered_name, id_card.assignment, id_card.get_trim_assignment())
-					card_slot.try_eject(current_user)
+					computer.RemoveID(usr)
 				else
 					playsound(get_turf(ui_host()) , 'sound/machines/buzz-sigh.ogg', 25, FALSE)
 			if("changedroneaccess")
-				if(!computer || !card_slot || !id_card)
+				if(!computer || !computer.computer_id_slot || !id_card)
 					to_chat(current_user, span_notice("No ID found, authorization failed."))
 					return
 				if(isdrone(current_user))
@@ -171,12 +158,42 @@
 				_alert_drones(msg, TRUE, current_user)
 				to_chat(current_user, msg)
 				playsound(src, 'sound/machines/terminal_success.ogg', 15, TRUE)
+
+			switch(action)
+				if("summon")
+					bot.bot_control(action, current_user, id_card ? id_card.access : current_access)
+				if("ejectcard")
+					if(!computer || !card_slot)
+						return
+					if(id_card)
+						GLOB.data_core.manifest_modify(id_card.registered_name, id_card.assignment, id_card.get_trim_assignment())
+						card_slot.try_eject(current_user)
+					else
+						playsound(get_turf(ui_host()) , 'sound/machines/buzz-sigh.ogg', 25, FALSE)
+				if("changedroneaccess")
+					if(!computer || !card_slot || !id_card)
+						to_chat(current_user, span_notice("No ID found, authorization failed."))
+						return
+					if(isdrone(current_user))
+						to_chat(current_user, span_notice("You can't free yourself."))
+						return
+					if(!(ACCESS_CE in id_card.access))
+						to_chat(current_user, span_notice("Required access not found on ID."))
+						return
+					GLOB.drone_machine_blacklist_enabled = !GLOB.drone_machine_blacklist_enabled
+				if("ping_drones")
+				if(!(params["ping_type"]) || !(params["ping_type"] in drone_ping_types))
+					return
+				var/area/current_area = get_area(current_user)
+				if(!current_area || QDELETED(current_user))
+					return
+				var/msg = span_boldnotice("NON-DRONE PING: [current_user.name]: [params["ping_type"]] priority alert in [current_area.name]!")
+				_alert_drones(msg, TRUE, current_user)
+				to_chat(current_user, msg)
+				playsound(src, 'sound/machines/terminal_success.ogg', 15, TRUE)
 	else
 		var/mob/living/basic/bot/basic_bot = locate(params["robot"]) in  GLOB.basic_bots_list
-		if (action in standard_actions)
-			basic_bot.bot_control(action, current_user, current_access)
-		if (action in MULE_actions)
-			basic_bot.bot_control(action, current_user, current_access, TRUE)
+
 
 		switch(action)
 			if("summon")
