@@ -3,12 +3,14 @@
 	desc = "Vileworms, the product of lavaland's corruptive nature on the natural fauna."
 	icon_state = "vileworm"
 	icon_living = "vileworm"
-	icon_dead = "vileworm_dead"
 	maxHealth = 150
 	health = 150
 
 	attack_action_path = /datum/action/cooldown/mob_cooldown/projectile_attack/dir_shots/bileworm/vileworm
 	evolve_path = null
+
+/mob/living/basic/mining/bileworm/vileworm/handle_death_icons()
+	AddElement(/datum/element/death_icon_handling, dead_icon = "vileworm_dead")
 
 /datum/action/cooldown/mob_cooldown/projectile_attack/dir_shots/bileworm/vileworm
 	name = "Spew Corrupted Bile"

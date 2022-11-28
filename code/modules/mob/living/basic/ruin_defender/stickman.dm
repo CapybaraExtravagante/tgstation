@@ -3,7 +3,6 @@
 	desc = "A being from a realm with only 2 dimensions. At least it's trying to stay faced towards you."
 	icon_state = "stickman"
 	icon_living = "stickman"
-	icon_dead = "stickman_dead"
 	mob_biotypes = MOB_HUMANOID
 	gender = MALE
 	health = 100
@@ -36,6 +35,10 @@
 	new /obj/effect/temp_visual/paper_scatter(get_turf(src))
 	AddElement(/datum/element/basic_body_temp_sensitive, cold_damage = 7.5, heat_damage = 7.5)
 	AddElement(/datum/element/atmos_requirements, atmos_requirements = habitable_atmos, unsuitable_atmos_damage = 7.5)
+	handle_death_icons()
+
+/mob/living/basic/stickman/proc/handle_death_icons()
+	AddElement(/datum/element/death_icon_handling, dead_icon = "stickman_dead")
 
 /datum/ai_controller/basic_controller/stickman
 	blackboard = list(
@@ -60,13 +63,15 @@
 	desc = "Stickman's best friend, if he could see him at least."
 	icon_state = "stickdog"
 	icon_living = "stickdog"
-	icon_dead = "stickdog_dead"
 	attack_verb_continuous = "bites"
 	attack_verb_simple = "bite"
 	attack_vis_effect = ATTACK_EFFECT_BITE
 	sharpness = SHARP_POINTY
 	mob_biotypes = MOB_BEAST
 	attack_sound = 'sound/weapons/bite.ogg'
+
+/mob/living/basic/stickman/proc/handle_death_icons()
+	AddElement(/datum/element/death_icon_handling, dead_icon = "stickdog_dead")
 
 /mob/living/basic/stickman/ranged
 	name = "Angry Stick Gunman"

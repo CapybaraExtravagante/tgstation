@@ -68,16 +68,9 @@
 	///Attacking, but without damage, verb in present simple tense.
 	var/friendly_verb_simple = "nuzzle"
 
-	////////THIS SECTION COULD BE ITS OWN ELEMENT
-	///Icon to use
-	var/icon_living = ""
-	///Icon when the animal is dead. Don't use animated icons for this.
-	var/icon_dead = ""
-	///We only try to show a gibbing animation if this exists.
+	////////This should be refactored, but on alive level, not just on basic level!
 	var/icon_gib = null
-	///Flip the sprite upside down on death. Mostly here for things lacking custom dead sprites.
-	var/flip_on_death = FALSE
-	///Removes density upon death, restores the original state if alive.
+	///Removes density upon death, restores the original state if alive. (Could be an element :) )
 	var/become_passable_on_death = TRUE
 
 	///If the mob can be spawned with a gold slime core. HOSTILE_SPAWN are spawned with plasma, FRIENDLY_SPAWN are spawned with blood.
@@ -119,9 +112,6 @@
 		qdel(src)
 	else
 		health = 0
-		icon_state = icon_dead
-		if(flip_on_death)
-			transform = transform.Turn(180)
 		if (become_passable_on_death)
 			set_density(FALSE)
 
@@ -129,9 +119,6 @@
 	. = ..()
 	if (!.)
 		return
-	icon_state = icon_living
-	if (flip_on_death)
-		transform = transform.Turn(180)
 	if (become_passable_on_death)
 		set_density(initial(density))
 

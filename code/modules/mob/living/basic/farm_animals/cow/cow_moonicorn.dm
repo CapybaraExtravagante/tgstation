@@ -5,7 +5,6 @@
 		Victims, yes, because despite the enimatic and wonderous appearance, the moonicorn is incredibly aggressive."
 	icon_state = "moonicorn"
 	icon_living = "moonicorn"
-	icon_dead = "moonicorn_dead"
 	icon_gib = null //otherwise does the regular cow gib animation
 	faction = list("hostile")
 	speed = 1
@@ -26,6 +25,9 @@
 	. = ..()
 	AddElement(/datum/element/venomous, /datum/reagent/pax, 5)
 	AddElement(/datum/element/movement_turf_changer, /turf/open/floor/grass/fairy)
+
+/mob/living/basic/cow/moonicorn/handle_death_icons()
+	AddElement(/datum/element/death_icon_handling, dead_icon = "moonicorn_dead")
 
 /mob/living/basic/cow/moonicorn/udder_component()
 	AddComponent(/datum/component/udder, /obj/item/udder, null, null, /datum/reagent/drug/mushroomhallucinogen)

@@ -12,7 +12,6 @@
 	icon = 'icons/mob/simple/rabbit.dmi'
 	icon_state = "rabbit_white"
 	icon_living = "rabbit_white"
-	icon_dead = "rabbit_white_dead"
 	gender = PLURAL
 	mob_biotypes = MOB_ORGANIC | MOB_BEAST
 	health = 15
@@ -39,8 +38,13 @@
 	. = ..()
 	AddElement(/datum/element/pet_bonus, "hops around happily!")
 	AddElement(/datum/element/animal_variety, icon_prefix, pick("brown", "black", "white"), TRUE)
+	handle_death_icons()
 	if(prob(20)) // bunny
 		name = "bunny"
+
+///wrapper for the death icon handling so we can override the behavior
+/mob/living/basic/rabbit/proc/handle_death_icons()
+	AddElement(/datum/element/death_icon_handling, dead_icon = "rabbit_white_dead")
 
 /datum/ai_controller/basic_controller/rabbit
 	ai_traits = STOP_MOVING_WHEN_PULLED
@@ -52,7 +56,6 @@
 /mob/living/basic/rabbit/easter
 	icon_state = "easter_rabbit_white"
 	icon_living = "easter_rabbit_white"
-	icon_dead = "easter_rabbit_white_dead"
 	icon_prefix = "easter_rabbit"
 	ai_controller = /datum/ai_controller/basic_controller/rabbit/easter
 	///passed to the egg_layer component as how many eggs it starts out as able to lay.
@@ -75,6 +78,9 @@
 		max_eggs_held,\
 	)
 
+/mob/living/basic/rabbit/easter/handle_death_icons()
+	AddElement(/datum/element/death_icon_handling, dead_icon = "easter_rabbit_white_dead")
+
 /datum/ai_controller/basic_controller/rabbit/easter
 	planning_subtrees = list(/datum/ai_planning_subtree/random_speech/rabbit/easter)
 
@@ -82,7 +88,6 @@
 /mob/living/basic/rabbit/easter/space
 	icon_state = "space_rabbit_white"
 	icon_living = "space_rabbit_white"
-	icon_dead = "space_rabbit_white_dead"
 	icon_prefix = "space_rabbit"
 	ai_controller = /datum/ai_controller/basic_controller/rabbit/easter/space
 	// Minimum Allowable Body Temp, zero because we are meant to survive in space and we have a fucking RABBIT SPACE MASK.
@@ -106,6 +111,9 @@
 	AddElement(/datum/element/atmos_requirements, atmos_requirements = habitable_atmos, unsuitable_atmos_damage = 0)
 	// heat_damage is 0.5 here to account for low health on the rabbit.
 	AddElement(/datum/element/basic_body_temp_sensitive, min_body_temp = minimum_survivable_temperature, max_body_temp = maximum_survivable_temperature, cold_damage = 0, heat_damage = 0.5)
+
+/mob/living/basic/rabbit/easter/space/handle_death_icons()
+	AddElement(/datum/element/death_icon_handling, dead_icon = "space_rabbit_white_dead")
 
 /datum/ai_controller/basic_controller/rabbit/easter/space
 	planning_subtrees = list(/datum/ai_planning_subtree/random_speech/rabbit/easter/space)

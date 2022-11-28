@@ -4,7 +4,6 @@
 	icon = 'icons/mob/simple/lavaland/bileworm.dmi'
 	icon_state = "bileworm"
 	icon_living = "bileworm"
-	icon_dead = "bileworm_dead"
 	mob_size = MOB_SIZE_LARGE
 	mob_biotypes = MOB_BUG
 	maxHealth = 100
@@ -59,3 +58,7 @@
 	ai_controller.blackboard[BB_BILEWORM_SPEW_BILE] = spew_bile
 	ai_controller.blackboard[BB_BILEWORM_RESURFACE] = resurface
 	ai_controller.blackboard[BB_BILEWORM_DEVOUR] = devour
+
+
+/mob/living/basic/mining/bileworm/proc/handle_death_icons()
+	AddElement(/datum/element/death_icon_handling, dead_icon = "bileworm_dead")

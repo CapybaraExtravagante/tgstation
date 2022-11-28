@@ -5,7 +5,6 @@
 	icon = 'icons/mob/simple/cows.dmi'
 	icon_state = "cow"
 	icon_living = "cow"
-	icon_dead = "cow_dead"
 	icon_gib = "cow_gib"
 	gender = FEMALE
 	mob_biotypes = MOB_ORGANIC | MOB_BEAST
@@ -45,8 +44,13 @@
 	AddElement(/datum/element/swabable, CELL_LINE_TABLE_COW, CELL_VIRUS_TABLE_GENERIC_MOB, 1, 5)
 	udder_component()
 	setup_eating()
+	handle_death_icons()
 	. = ..()
 	ai_controller.blackboard[BB_BASIC_FOODS] = food_types
+
+///wrapper for the death icon handling so we can override the behavior
+/mob/living/basic/cow/proc/handle_death_icons()
+	AddElement(/datum/element/death_icon_handling, dead_icon = "cow_dead")
 
 ///wrapper for the udder component addition so you can have uniquely uddered cow subtypes
 /mob/living/basic/cow/proc/udder_component()

@@ -4,7 +4,6 @@
 	desc = "A fat pig."
 	icon_state = "pig"
 	icon_living = "pig"
-	icon_dead = "pig_dead"
 	icon_gib = "pig_gib"
 	gender = MALE
 	mob_biotypes = MOB_ORGANIC | MOB_BEAST
@@ -30,6 +29,8 @@
 /mob/living/basic/pig/Initialize()
 	AddElement(/datum/element/pet_bonus, "oinks!")
 	make_tameable()
+	AddElement(/datum/element/death_icon_handling, dead_icon = "pig_dead")
+
 	. = ..()
 
 ///wrapper for the tameable component addition so you can have non tamable cow subtypes
@@ -46,4 +47,4 @@
 	ai_traits = STOP_MOVING_WHEN_PULLED
 	ai_movement = /datum/ai_movement/basic_avoidance
 	idle_behavior = /datum/idle_behavior/idle_random_walk
-	
+

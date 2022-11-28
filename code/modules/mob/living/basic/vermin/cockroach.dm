@@ -2,7 +2,6 @@
 	name = "cockroach"
 	desc = "This station is just crawling with bugs."
 	icon_state = "cockroach"
-	icon_dead = "cockroach" //Make this work
 	density = FALSE
 	mob_biotypes = MOB_ORGANIC|MOB_BUG
 	mob_size = MOB_SIZE_TINY
@@ -37,6 +36,7 @@
 	AddElement(/datum/element/basic_body_temp_sensitive, 270, INFINITY)
 	AddComponent(/datum/component/squashable, squash_chance = 50, squash_damage = 1)
 	ADD_TRAIT(src, TRAIT_VENTCRAWLER_ALWAYS, INNATE_TRAIT)
+	AddElement(/datum/element/death_icon_handling, dead_icon = "cockroach")
 
 /mob/living/basic/cockroach/death(gibbed)
 	if(GLOB.station_was_nuked) //If the nuke is going off, then cockroaches are invincible. Keeps the nuke from killing them, cause cockroaches are immune to nukes.

@@ -3,7 +3,6 @@
 	desc = "Known for their soft wool and use in sacrifical rituals. Big fan of grass."
 	icon = 'icons/mob/simple/sheep.dmi'
 	icon_state = "sheep"
-	icon_dead = "sheep_dead"
 	base_icon_state = "sheep"
 	gender = FEMALE
 	mob_biotypes = MOB_ORGANIC | MOB_BEAST
@@ -44,6 +43,7 @@
 		item_harvest_sound = 'sound/surgery/scalpel1.ogg', \
 	)
 	RegisterSignal(src, COMSIG_LIVING_CULT_SACRIFICED, PROC_REF(on_sacrificed))
+	AddElement(/datum/element/death_icon_handling, dead_icon = "sheep_dead")
 
 /mob/living/basic/sheep/update_overlays()
 	. = ..()

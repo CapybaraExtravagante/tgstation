@@ -3,7 +3,6 @@
 	desc = "This is the adorable by-product of multiple attempts at genetically mixing mothpeople with cockroaches."
 	icon_state = "mothroach"
 	icon_living = "mothroach"
-	icon_dead = "mothroach_dead"
 	held_state = "mothroach"
 	held_lh = 'icons/mob/inhands/animal_item_lefthand.dmi'
 	held_rh = 'icons/mob/inhands/animal_item_righthand.dmi'
@@ -39,6 +38,7 @@
 	AddElement(/datum/element/pet_bonus, "squeaks happily!")
 	add_verb(src, /mob/living/proc/toggle_resting)
 	ADD_TRAIT(src, TRAIT_VENTCRAWLER_ALWAYS, INNATE_TRAIT)
+	AddElement(/datum/element/death_icon_handling, dead_icon = "mothroach_dead")
 
 /mob/living/basic/mothroach/toggle_resting()
 	. = ..()
