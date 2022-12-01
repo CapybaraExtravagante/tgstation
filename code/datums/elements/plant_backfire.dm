@@ -63,10 +63,10 @@
  * source - our plant
  * thrower - the mob throwing our [source]
  */
-/datum/element/plant_backfire/proc/throw_safety_check(obj/item/source, list/arguments)
+/datum/element/plant_backfire/proc/throw_safety_check(obj/item/source, atom/target, range, speed, mob/thrower, spin = TRUE, diagonals_first = FALSE, datum/callback/callback, force = MOVE_FORCE_STRONG, gentle = FALSE, quickstart = TRUE)
 	SIGNAL_HANDLER
 
-	var/mob/living/thrower = arguments[4] // the 4th arg = the mob throwing our item
+	var/mob/living/thrower = thrower
 	if(!istype(thrower) || !thrower.is_holding(source))
 		return
 	if(!backfire(source, thrower))

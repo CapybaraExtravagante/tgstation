@@ -1161,7 +1161,7 @@
 	if (!target || speed <= 0)
 		return
 
-	if(SEND_SIGNAL(src, COMSIG_MOVABLE_PRE_THROW, args) & COMPONENT_CANCEL_THROW)
+	if(SEND_SIGNAL(src, COMSIG_MOVABLE_PRE_THROW, arglist(args)) & COMPONENT_CANCEL_THROW)
 		return
 
 	if (pulledby)

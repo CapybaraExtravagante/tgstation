@@ -174,14 +174,14 @@
 	return TRUE
 
 /// Signal proc for [COMSIG_MOVABLE_PRE_THROW] that prevents people from escaping our locked area via throw.
-/datum/status_effect/eldritch/blade/proc/on_pre_throw(mob/living/source, list/throw_args)
+/datum/status_effect/eldritch/blade/proc/on_pre_throw(mob/living/source, atom/target, range, speed, mob/thrower, spin = TRUE, diagonals_first = FALSE, datum/callback/callback, force = MOVE_FORCE_STRONG, gentle = FALSE, quickstart = TRUE)
 	SIGNAL_HANDLER
 
-	var/atom/throw_dest = throw_args[1]
+	var/atom/throw_dest = target
 	if(!is_escaping_locked_area(source, throw_dest))
 		return
 
-	var/mob/thrower = throw_args[4]
+	var/mob/thrower = thrower
 	if(istype(thrower))
 		to_chat(thrower, span_hypnophrase("An otherworldly force prevents you from throwing [source] out of [get_area_name(locked_to)]!"))
 
