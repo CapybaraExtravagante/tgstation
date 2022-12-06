@@ -229,6 +229,9 @@
 				INVOKE_ASYNC(S.dna.species, TYPE_PROC_REF(/datum/species, grab), S, T)
 				S.setGrabState(GRAB_AGGRESSIVE)
 
+	///If you got an advantageous roll and are fat, the other person will go squish.
+	if(roll >= 3 && HAS_TRAIT(user, TRAIT_FAT))
+		target.AddElement(/datum/element/squish, 10 SECONDS)
 
 	return COMPONENT_MOVABLE_IMPACT_FLIP_HITPUSH
 
