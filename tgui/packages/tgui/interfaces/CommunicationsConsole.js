@@ -1,7 +1,7 @@
 import { sortBy } from 'common/collections';
 import { capitalize } from 'common/string';
 import { useBackend, useLocalState } from '../backend';
-import { Blink, Box, Button, Dimmer, Flex, Icon, Modal, Section, TextArea } from '../components';
+import { Blink, Box, Button, Dimmer, Flex, Icon, Modal, Section, TextArea, ProgressBar, Stack } from '../components';
 import { StatusDisplayControls } from './common/StatusDisplayControls';
 import { Window } from '../layouts';
 import { sanitizeText } from '../sanitize';
@@ -10,6 +10,7 @@ const STATE_BUYING_SHUTTLE = 'buying_shuttle';
 const STATE_CHANGING_STATUS = 'changing_status';
 const STATE_MAIN = 'main';
 const STATE_MESSAGES = 'messages';
+const STATE_FACTIONS = 'factions';
 
 // Used for whether or not you need to swipe to confirm an alert level change
 const SWIPE_NEEDED = 'SWIPE_NEEDED';
@@ -387,6 +388,12 @@ const PageMain = (props, context) => {
             onClick={() => act('setState', { state: STATE_MESSAGES })}
           />
 
+          <Button
+            icon="envelope-o"
+            content="Factions"
+            onClick={() => act('setState', { state: STATE_FACTIONS })}
+          />
+
           {canBuyShuttles !== 0 && (
             <Button
               icon="shopping-cart"
@@ -559,6 +566,67 @@ const PageMain = (props, context) => {
   );
 };
 
+const PageFactions = (props, context) => {
+  const { act, data } = useBackend(context);
+  const factions = data.factions || [];
+
+  const children = [];
+
+  children.push(
+    <Section>
+      <Button
+        icon="chevron-left"
+        content="Back"
+        onClick={() => act('setState', { state: STATE_MAIN })}
+      />
+    </Section>
+  );
+
+  const factionElements = [];
+
+  const color_data = {};
+
+  for (const [FactionIndex, Faction] of Object.entries(factions)) {
+    factionElements.push(
+      <Section key={FactionIndex} backgroundColor={Faction.color}>
+        <Stack vertical fill>
+          <Stack.Item>
+            <Stack>
+              <Stack.Item verticalAlign="top">
+                <Icon size={10} name={Faction.icon} />
+              </Stack.Item>
+              <Stack.Item>
+                <Box fontSize="32px">{Faction.name}</Box>
+              </Stack.Item>
+            </Stack>
+          </Stack.Item>
+          <Stack.Item grow />
+          <Stack.Item>
+            <Box>{Faction.desc}</Box>
+          </Stack.Item>
+          <Stack.Item>
+            <ProgressBar
+              ranges={{
+                good: [1, 100],
+                average: [-30, 1],
+                bad: [-100, -30],
+              }}
+              minValue={-100}
+              value={Faction.reputation}
+              maxValue={100}>
+              {Faction.reputation}
+            </ProgressBar>
+          </Stack.Item>
+        </Stack>
+      </Section>
+    );
+  }
+
+  children.push(factionElements);
+
+  return children;
+};
+
 const PageMessages = (props, context) => {
   const { act, data } = useBackend(context);
   const messages = data.messages || [];
@@ -690,6 +758,7 @@ export const CommunicationsConsole = (props, context) => {
           ((page === STATE_BUYING_SHUTTLE && <PageBuyingShuttle />) ||
             (page === STATE_CHANGING_STATUS && <PageChangingStatus />) ||
             (page === STATE_MAIN && <PageMain />) ||
+            (page === STATE_FACTIONS && <PageFactions />) ||
             (page === STATE_MESSAGES && <PageMessages />) || (
               <Box>Page not implemented: {page}</Box>
             ))}

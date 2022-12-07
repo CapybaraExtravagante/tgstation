@@ -6,6 +6,7 @@
 #define STATE_CHANGING_STATUS "changing_status"
 #define STATE_MAIN "main"
 #define STATE_MESSAGES "messages"
+#define STATE_FACTIONS "factions"
 
 // The communications computer
 /obj/machinery/computer/communications
@@ -139,7 +140,7 @@
 	playsound(src, 'sound/machines/terminal_alert.ogg', 50, FALSE)
 
 /obj/machinery/computer/communications/ui_act(action, list/params)
-	var/static/list/approved_states = list(STATE_BUYING_SHUTTLE, STATE_CHANGING_STATUS, STATE_MAIN, STATE_MESSAGES)
+	var/static/list/approved_states = list(STATE_BUYING_SHUTTLE, STATE_CHANGING_STATUS, STATE_MAIN, STATE_MESSAGES, STATE_FACTIONS)
 
 	. = ..()
 	if (.)
@@ -613,9 +614,23 @@
 				data["upperText"] = last_status_display ? last_status_display[1] : ""
 				data["lowerText"] = last_status_display ? last_status_display[2] : ""
 
+			if (STATE_FACTIONS)
+				data["factions"] = list()
+
+				var/list/factions = SSfactions.get_factions() /// assoc list type - instance of our factions
+
+				for(var/faction_type in factions)
+					var/datum/faction/faction = factions[faction_type]
+					data["factions"] += list(list(
+						"name" = faction.name,
+						"desc" = faction.basic_desc,
+						"reputation" = faction.current_relationship,
+						"color" = faction.faction_color,
+						"icon" = faction.icon
+					))
 	return data
 
-/obj/machinery/computer/communications/ui_interact(mob/user, datum/tgui/ui)
+/obj/machinery/computer/communications/ui_interact(obj/user, datum/tgui/ui)
 	. = ..()
 	ui = SStgui.try_update_ui(user, src, ui)
 	if (!ui)
@@ -942,3 +957,4 @@
 #undef STATE_CHANGING_STATUS
 #undef STATE_MAIN
 #undef STATE_MESSAGES
+#undef STATE_FACTIONS
