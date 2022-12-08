@@ -1,6 +1,7 @@
 /datum/supply_pack/critter
 	group = "Livestock"
 	crate_type = /obj/structure/closet/crate/critter
+	sold_by_primary_faction = TRUE
 
 /datum/supply_pack/critter/parrot
 	name = "Bird Crate"

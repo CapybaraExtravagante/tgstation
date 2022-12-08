@@ -1,7 +1,7 @@
 import { sortBy } from 'common/collections';
 import { capitalize } from 'common/string';
 import { useBackend, useLocalState } from '../backend';
-import { Blink, Box, Button, Dimmer, Flex, Icon, Modal, Section, TextArea, ProgressBar, Stack } from '../components';
+import { Blink, Box, Button, Dimmer, Flex, Icon, Modal, Section, TextArea, ProgressBar, Stack, Divider } from '../components';
 import { StatusDisplayControls } from './common/StatusDisplayControls';
 import { Window } from '../layouts';
 import { sanitizeText } from '../sanitize';
@@ -593,17 +593,25 @@ const PageFactions = (props, context) => {
           <Stack.Item>
             <Stack>
               <Stack.Item verticalAlign="top">
-                <Icon size={10} name={Faction.icon} />
+                <Icon size={3.5} name={Faction.icon} />
               </Stack.Item>
               <Stack.Item>
-                <Box fontSize="32px">{Faction.name}</Box>
+                <Stack vertical fill>
+                  <Stack.Item>
+                    <Box bold fontSize="28px">
+                      {Faction.name}
+                    </Box>
+                    <Divider />
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Box>{Faction.desc}</Box>
+                  </Stack.Item>
+                </Stack>
               </Stack.Item>
             </Stack>
           </Stack.Item>
           <Stack.Item grow />
-          <Stack.Item>
-            <Box>{Faction.desc}</Box>
-          </Stack.Item>
+          <Stack.Item />
           <Stack.Item>
             <ProgressBar
               ranges={{

@@ -2,6 +2,7 @@
 	group = "Security"
 	access = ACCESS_SECURITY
 	crate_type = /obj/structure/closet/crate/secure/gear
+	selling_faction = /datum/faction/ssc
 
 /datum/supply_pack/security/ammo
 	name = "Ammo Crate"

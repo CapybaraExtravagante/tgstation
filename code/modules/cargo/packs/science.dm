@@ -2,6 +2,7 @@
 	group = "Science"
 	access_view = ACCESS_RESEARCH
 	crate_type = /obj/structure/closet/crate/science
+	sold_by_primary_faction = TRUE
 
 /datum/supply_pack/science/plasma
 	name = "Plasma Assembly Crate"

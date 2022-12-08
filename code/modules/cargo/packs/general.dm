@@ -1,5 +1,6 @@
 /datum/supply_pack/misc
 	group = "Miscellaneous Supplies"
+	sold_by_primary_faction = TRUE
 
 /datum/supply_pack/misc/artsupply
 	name = "Art Supplies"

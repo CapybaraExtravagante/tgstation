@@ -1,3 +1,6 @@
+///Lower than this than results in infinite profit loops!
+#define MINIMUM_SUPPLY_PACK_COST CARGO_CRATE_VALUE * 1.4
+
 /datum/supply_pack
 	/// The name of the supply pack, as listed on th cargo purchasing UI.
 	var/name = "Crate"
@@ -8,7 +11,7 @@
 	/// Is this supply pack purchasable outside of the standard purchasing band? Contraband is available by multitooling the cargo purchasing board.
 	var/contraband = FALSE
 	/// Cost of the crate. DO NOT GO ANY LOWER THAN X1.4 the "CARGO_CRATE_VALUE" value if using regular crates, or infinite profit will be possible!
-	var/cost = CARGO_CRATE_VALUE * 1.4
+	var/cost = MINIMUM_SUPPLY_PACK_COST
 	/// What access is required to open the crate when spawned?
 	var/access = FALSE
 	/// Who can view this supply_pack and with what access.
@@ -39,6 +42,10 @@
 	var/admin_spawned = FALSE
 	/// Goodies can only be purchased by private accounts and can have coupons apply to them. They also come in a lockbox instead of a full crate, so the 700 min doesn't apply
 	var/goody = FALSE
+	/// Faction this supply pack is sold by.
+	var/datum/faction/selling_faction = null
+	/// Whether this supply pack is sold by the primary faction. If this is TRUE then selling faction is ignored. This should be used if NT is selling it, so it can be switched if revolutionaries win.
+	var/sold_by_primary_faction = TRUE
 
 /datum/supply_pack/New()
 	id = type
@@ -64,6 +71,22 @@
 /datum/supply_pack/proc/get_cost()
 	. = cost
 	. *= SSeconomy.pack_price_modifier
+
+	if(!selling_faction && !sold_by_primary_faction)
+		return max(., MINIMUM_SUPPLY_PACK_COST)
+
+	var/datum/faction/selling_faction_instance
+	if(selling_faction)
+		selling_faction_instance = SSfactions.factions[selling_faction]
+	if(sold_by_primary_faction)
+		selling_faction_instance = SSfactions.get_primary_faction()
+
+	if(!selling_faction_instance)
+		return max(., MINIMUM_SUPPLY_PACK_COST)
+
+	. *= selling_faction_instance.get_cargo_crate_price_mult()
+
+	return max(., MINIMUM_SUPPLY_PACK_COST)
 
 /datum/supply_pack/proc/fill(obj/structure/closet/crate/C)
 	for(var/item in contains)
@@ -95,3 +118,6 @@
 	name = "[purchaser]'s Mining Order"
 	src.cost = cost
 	src.contains = contains
+
+
+#undef MINIMUM_SUPPLY_PACK_COST

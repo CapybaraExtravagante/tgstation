@@ -1,5 +1,6 @@
 /datum/supply_pack/materials
 	group = "Canisters & Materials"
+	sold_by_primary_faction = TRUE
 
 /datum/supply_pack/materials/cardboard50
 	name = "50 Cardboard Sheets"
