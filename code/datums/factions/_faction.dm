@@ -77,19 +77,20 @@
 
 	relation_update_messages = list(
 		FACTION_RELATION_LEVEL_HATED = "You will hear from us.",
-		FACTION_RELATION_LEVEL_APPRECIATED
+		FACTION_RELATION_LEVEL_DISLIKED = "You will hear from us.",
+		FACTION_RELATION_LEVEL_APPRECIATED = "You will hear from us.",
 
 	)
 
 /datum/faction/nanotrasen/get_cargo_crate_price_mult()
-	switch(current_relationship)
-		if(-100 to -50)
+	switch(relation_tier)
+		if(FACTION_RELATION_LEVEL_HATED to FACTION_RELATION_LEVEL_DISLIKED)
 			return 2
-		if(-50 to -10)
+		if(FACTION_RELATION_LEVEL_DISLIKED to FACTION_RELATION_LEVEL_DISTRUSTED)
 			return 1.5
-		if(-10 to 25) // 25 is the default for NT
+		if(FACTION_RELATION_LEVEL_DISTRUSTED to FACTION_RELATION_LEVEL_NEUTRAL) // Default level
 			return 1
-		if(25 to 50)
+		if(FACTION_RELATION_LEVEL_NEUTRAL to FACTION_RELATION_LEVEL_APPRECIATED)
 			return 0.9
 		if(50 to 100)
 			return 0.8
