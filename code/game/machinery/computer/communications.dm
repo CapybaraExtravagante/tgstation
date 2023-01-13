@@ -219,6 +219,8 @@
 			var/message_index = text2num(params["message"])
 			if (!message_index)
 				return
+			var/datum/comm_message/deleted_message = LAZYACCESS(messages, message_index)
+			deleted_message.deletion_callback.InvokeAsync()
 			LAZYREMOVE(messages, LAZYACCESS(messages, message_index))
 		if ("emergency_meeting")
 			if(!check_holidays(APRIL_FOOLS))
@@ -270,7 +272,7 @@
 				to_chat(usr, span_alert("You have not met the requirements for purchasing this shuttle."))
 				return
 			var/datum/bank_account/bank_account = SSeconomy.get_dep_account(ACCOUNT_CAR)
-			if (bank_account.account_balance < shuttle.credit_cost)
+			if (bank_account.account_balance < shuttle.get_shuttle_cost())
 				return
 			SSshuttle.shuttle_purchased = SHUTTLEPURCHASE_PURCHASED
 			for(var/datum/round_event_control/shuttle_insurance/insurance_event in SSevents.control)
@@ -278,10 +280,10 @@
 			SSshuttle.unload_preview()
 			SSshuttle.existing_shuttle = SSshuttle.emergency
 			SSshuttle.action_load(shuttle, replace = TRUE)
-			bank_account.adjust_money(-shuttle.credit_cost)
+			bank_account.adjust_money(-shuttle.get_shuttle_cost())
 
 			var/purchaser_name = (obj_flags & EMAGGED) ? scramble_message_replace_chars("AUTHENTICATION FAILURE: CVE-2018-17107", 60) : usr.real_name
-			minor_announce("[purchaser_name] has purchased [shuttle.name] for [shuttle.credit_cost] credits.[shuttle.extra_desc ? " [shuttle.extra_desc]" : ""]" , "Shuttle Purchase")
+			minor_announce("[purchaser_name] has purchased [shuttle.name] for [shuttle.get_shuttle_cost()] credits.[shuttle.extra_desc ? " [shuttle.extra_desc]" : ""]" , "Shuttle Purchase")
 
 			message_admins("[ADMIN_LOOKUPFLW(usr)] purchased [shuttle.name].")
 			log_shuttle("[key_name(usr)] has purchased [shuttle.name].")
@@ -580,11 +582,20 @@
 				if (messages)
 					for (var/_message in messages)
 						var/datum/comm_message/message = _message
+						var/list/possible_answer_availability = list()
+						for(var/answer in message.possible_answers)
+							var/datum/callback/callback = message.answer_conditional_callbacks[answer]
+							if(callback)
+								possible_answer_availability[answer] = callback.Invoke()
+							else
+								possible_answer_availability[answer] = TRUE
+
 						data["messages"] += list(list(
 							"answered" = message.answered,
 							"content" = message.content,
 							"title" = message.title,
 							"possibleAnswers" = message.possible_answers,
+							"possibleAnswerAvailability" = possible_answer_availability
 						))
 			if (STATE_BUYING_SHUTTLE)
 				var/datum/bank_account/bank_account = SSeconomy.get_dep_account(ACCOUNT_CAR)
@@ -602,7 +613,7 @@
 					shuttles += list(list(
 						"name" = shuttle_template.name,
 						"description" = shuttle_template.description,
-						"creditCost" = shuttle_template.credit_cost,
+						"creditCost" = shuttle_template.get_shuttle_cost(),
 						"emagOnly" = shuttle_template.emag_only,
 						"prerequisites" = shuttle_template.prerequisites,
 						"ref" = REF(shuttle_template),
@@ -936,20 +947,37 @@
 #undef MAX_PERCENT_GHOSTS_FOR_SLEEPER
 
 /datum/comm_message
+	///Title of the message
 	var/title
+	///Text thats in the message
 	var/content
+	///Potential answers that can be given to the message.
 	var/list/possible_answers = list()
+	///An assoc list of possible answer (string) to the callback that needs to be invoked to check if the button is active. Does not need to be filled
+	var/list/answer_conditional_callbacks = list()
+	///Whether or not this question has been answered. Once answered, will supply the index of the answer that was given from possible_answers
 	var/answered = FALSE
+	///Callback that gets called when an answer is given
 	var/datum/callback/answer_callback
+	///Callback that gets called on message deletion
+	var/datum/callback/deletion_callback
 
-/datum/comm_message/New(new_title,new_content,new_possible_answers)
+/datum/comm_message/New(new_title, new_content, new_possible_answers, new_answer_conditional_callbacks)
 	..()
+	refresh_message(new_title, new_content, new_possible_answers, new_answer_conditional_callbacks)
+
+///Gives the message new information, new answers, and makes it available again if it was answered.
+/datum/comm_message/proc/refresh_message(new_title, new_content, new_possible_answers, new_answer_conditional_callbacks)
+	answered = FALSE
 	if(new_title)
 		title = new_title
 	if(new_content)
 		content = new_content
 	if(new_possible_answers)
 		possible_answers = new_possible_answers
+	if(answer_conditional_callbacks)
+		answer_conditional_callbacks = new_answer_conditional_callbacks
+
 
 #undef IMPORTANT_ACTION_COOLDOWN
 #undef EMERGENCY_ACCESS_COOLDOWN

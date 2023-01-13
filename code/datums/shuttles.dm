@@ -29,6 +29,10 @@
 	var/port_y_offset
 	var/extra_desc = ""
 
+/datum/map_template/shuttle/proc/get_shuttle_cost()
+	var/datum/faction/selling_faction_instance = SSfactions.get_primary_faction()
+	return credit_cost *= selling_faction_instance.get_shuttle_price_mult()
+
 /datum/map_template/shuttle/proc/prerequisites_met()
 	return TRUE
 

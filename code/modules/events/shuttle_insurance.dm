@@ -35,7 +35,7 @@
 	for(var/shuttle_id in SSmapping.shuttle_templates)
 		var/datum/map_template/shuttle/template = SSmapping.shuttle_templates[shuttle_id]
 		if(template.name == SSshuttle.emergency.name) //found you slackin
-			insurance_evaluation = template.credit_cost/2
+			insurance_evaluation = template.get_shuttle_cost()/2
 			break
 	if(!insurance_evaluation)
 		insurance_evaluation = 5000 //gee i dunno

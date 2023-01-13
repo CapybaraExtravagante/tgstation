@@ -1185,6 +1185,7 @@
 #include "code\datums\elements\screentips\contextual_screentip_sharpness.dm"
 #include "code\datums\elements\screentips\contextual_screentip_tools.dm"
 #include "code\datums\factions\_faction.dm"
+#include "code\datums\factions\_faction_request.dm"
 #include "code\datums\greyscale\_greyscale_config.dm"
 #include "code\datums\greyscale\json_reader.dm"
 #include "code\datums\greyscale\layer.dm"

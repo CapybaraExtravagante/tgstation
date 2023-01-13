@@ -11,8 +11,7 @@
 /datum/round_event_control/shuttle_loan
 	name = "Shuttle Loan"
 	typepath = /datum/round_event/shuttle_loan
-	max_occurrences = 3
-	earliest_start = 7 MINUTES
+	weight = 0 //Gets requested by factions
 	category = EVENT_CATEGORY_BUREAUCRATIC
 	description = "If cargo accepts the offer, fills the shuttle with loot and/or enemies."
 	///The types of loan offers that the crew can recieve.
@@ -54,7 +53,7 @@
 	end_when = 500
 	var/dispatched = FALSE
 	var/dispatch_type = "none"
-	var/bonus_points = 10000
+	var/bonus_points = 1000
 	var/thanks_msg = "The cargo shuttle should return in five minutes. Have some supply points for your trouble."
 	var/loan_type //for logging
 
