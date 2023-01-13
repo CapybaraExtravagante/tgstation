@@ -38,32 +38,39 @@
 
 	footstep_type = FOOTSTEP_MOB_SLIME
 
-	var/cores = 1 // the number of /obj/item/slime_extract's the slime has left inside
-	var/mutation_chance = 30 // Chance of mutating, should be between 25 and 35
-
+	///Whether the slime is an adult
 	var/is_adult = FALSE
-	var/docile = FALSE
+	/// the number of /obj/item/slime_extract's the slime has left inside
+	var/cores = 1
+	/// Chance of mutating, should be between 25 and 35
+	var/mutation_chance = 30
 
-	var/powerlevel = 0 // 1-10 controls how much electricity they are generating
-	var/amount_grown = 0 // controls how long the slime has been overfed, if 10, grows or reproduces
+	/// 1-10 controls how much electricity they are generating
+	var/powerlevel = 0
+	/// controls how long the slime has been overfed, if 10, grows or reproduces
+	var/amount_grown = 0
 
-	var/number = 0 // Used to understand when someone is talking to it
+	/// Identifying number for the slime
+	var/identifier_number = 0
 
+	///How hunger we currently are
+	var/hunger_level = 0
+
+	/*
 	var/mob/living/Target = null // AI variable - tells the slime to hunt this down
 	var/mob/living/Leader = null // AI variable - tells the slime to follow this person
-
-	var/attacked = 0 // Determines if it's been attacked recently. Can be any number, is a cooloff-ish variable
-	var/rabid = 0 // If set to 1, the slime will attack and eat anything it comes in contact with
-	var/holding_still = 0 // AI variable, cooloff-ish for how long it's going to stay in one place
-	var/target_patience = 0 // AI variable, cooloff-ish for how long it's going to follow its target
 
 	var/list/Friends = list() // A list of friends; they are not considered targets for feeding; passed down after splitting
 
 	var/list/speech_buffer = list() // Last phrase said near it and person who said it
 
+	*/
+
 	var/mood = "" // To show its face
+	/*
 	var/mutator_used = FALSE //So you can't shove a dozen mutators into a single slime
 	var/force_stasis = FALSE
+	*/
 
 	var/static/regex/slime_name_regex = new("\\w+ (baby|adult) slime \\(\\d+\\)")
 	///////////TIME FOR SUBSPECIES
@@ -83,16 +90,10 @@
 	var/applied = 0 //How many extracts of the modtype have been applied.
 
 
-/mob/living/basic/slime/Initialize(mapload)
+/mob/living/basic/slime/Initialize(mapload, new_colour=colour, new_is_adult=FALSE)
 	. = ..()
 	AddElement(/datum/element/basic_body_temp_sensitive, 250, 350)
 
-
-
-
-
-
-/mob/living/simple_animal/slime/Initialize(mapload, new_colour=colour, new_is_adult=FALSE)
 	var/datum/action/innate/slime/feed/F = new
 	F.Grant(src)
 	ADD_TRAIT(src, TRAIT_CANT_RIDE, INNATE_TRAIT)
@@ -107,6 +108,7 @@
 	else
 		var/datum/action/innate/slime/evolve/E = new
 		E.Grant(src)
+
 	create_reagents(100)
 	set_colour(new_colour)
 	. = ..()
@@ -116,27 +118,27 @@
 	ADD_TRAIT(src, TRAIT_VENTCRAWLER_ALWAYS, INNATE_TRAIT)
 	AddElement(/datum/element/soft_landing)
 
-/mob/living/simple_animal/slime/Destroy()
+/mob/living/basic/slime/add_cell_sample()
+	AddElement(/datum/element/swabable, CELL_LINE_TABLE_SLIME, CELL_VIRUS_TABLE_GENERIC_MOB, 1, 5)
+
+/mob/living/basic/slime/Destroy()
 	for (var/A in actions)
 		var/datum/action/AC = A
 		AC.Remove(src)
-	set_target(null)
-	set_leader(null)
-	clear_friends()
 	return ..()
 
-/mob/living/simple_animal/slime/create_reagents(max_vol, flags)
+/mob/living/basic/slime/create_reagents(max_vol, flags)
 	. = ..()
 	RegisterSignals(reagents, list(COMSIG_REAGENTS_NEW_REAGENT, COMSIG_REAGENTS_DEL_REAGENT), PROC_REF(on_reagent_change))
 	RegisterSignal(reagents, COMSIG_PARENT_QDELETING, PROC_REF(on_reagents_del))
 
 /// Handles removing signal hooks incase someone is crazy enough to reset the reagents datum.
-/mob/living/simple_animal/slime/proc/on_reagents_del(datum/reagents/reagents)
+/mob/living/basic/slime/proc/on_reagents_del(datum/reagents/reagents)
 	SIGNAL_HANDLER
 	UnregisterSignal(reagents, list(COMSIG_REAGENTS_NEW_REAGENT, COMSIG_REAGENTS_DEL_REAGENT, COMSIG_PARENT_QDELETING))
 	return NONE
 
-/mob/living/simple_animal/slime/proc/set_colour(new_colour)
+/mob/living/basic/slime/proc/set_colour(new_colour)
 	colour = new_colour
 	update_name()
 	slime_mutation = mutation_table(colour)
@@ -144,17 +146,17 @@
 	coretype = text2path("/obj/item/slime_extract/[sanitizedcolour]")
 	regenerate_icons()
 
-/mob/living/simple_animal/slime/update_name()
+/mob/living/basic/slime/update_name()
 	if(slime_name_regex.Find(name))
-		number = rand(1, 1000)
-		name = "[colour] [is_adult ? "adult" : "baby"] slime ([number])"
+		identifier_number = rand(1, 1000)
+		name = "[colour] [is_adult ? "adult" : "baby"] slime ([identifier_number])"
 		real_name = name
 	return ..()
 
-/mob/living/simple_animal/slime/proc/random_colour()
+/mob/living/basic/slime/proc/random_colour()
 	set_colour(pick(slime_colours))
 
-/mob/living/simple_animal/slime/regenerate_icons()
+/mob/living/basic/slime/regenerate_icons()
 	cut_overlays()
 	var/icon_text = "[colour] [is_adult ? "adult" : "baby"] slime"
 	icon_dead = "[icon_text] dead"
@@ -171,7 +173,7 @@
  *
  * Should be moved to the reagents at some point in the future. As it is I'm in a hurry.
  */
-/mob/living/simple_animal/slime/proc/on_reagent_change(datum/reagents/holder, ...)
+/mob/living/basic/slime/proc/on_reagent_change(datum/reagents/holder, ...)
 	SIGNAL_HANDLER
 	remove_movespeed_modifier(/datum/movespeed_modifier/slime_reagentmod)
 	var/amount = 0
@@ -183,7 +185,7 @@
 		add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/slime_reagentmod, multiplicative_slowdown = amount)
 	return NONE
 
-/mob/living/simple_animal/slime/updatehealth()
+/mob/living/basic/slime/updatehealth()
 	. = ..()
 	var/mod = 0
 	if(!HAS_TRAIT(src, TRAIT_IGNOREDAMAGESLOWDOWN))
@@ -194,7 +196,7 @@
 			mod += 2
 	add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/slime_healthmod, multiplicative_slowdown = mod)
 
-/mob/living/simple_animal/slime/adjust_bodytemperature()
+/mob/living/basic/slime/adjust_bodytemperature()
 	. = ..()
 	var/mod = 0
 	if(bodytemperature >= 330.23) // 135 F or 57.08 C
@@ -204,7 +206,7 @@
 	if(mod)
 		add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/slime_tempmod, multiplicative_slowdown = mod)
 
-/mob/living/simple_animal/slime/ObjBump(obj/O)
+/mob/living/basic/slime/ObjBump(obj/O)
 	if(!client && powerlevel > 0)
 		var/probab = 10
 		switch(powerlevel)
@@ -220,18 +222,21 @@
 				probab = 70
 			if(10)
 				probab = 95
-		if(prob(probab))
-			if(istype(O, /obj/structure/window) || istype(O, /obj/structure/grille))
-				if(nutrition <= get_hunger_nutrition() && !Atkcool)
-					if (is_adult || prob(5))
-						O.attack_slime(src)
-						Atkcool = TRUE
-						addtimer(VARSET_CALLBACK(src, Atkcool, FALSE), 4.5 SECONDS)
+		if(!prob(probab))
+			return
+		if(!istype(O, /obj/structure/window) && !istype(O, /obj/structure/grille))
 
-/mob/living/simple_animal/slime/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
+		if(nutrition > get_hunger_nutrition() || Atkcool)
+			return
+		if (is_adult || prob(5))
+			O.attack_slime(src)
+			Atkcool = TRUE
+			addtimer(VARSET_CALLBACK(src, Atkcool, FALSE), 4.5 SECONDS)
+
+/mob/living/basic/slime/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	return 2
 
-/mob/living/simple_animal/slime/get_status_tab_items()
+/mob/living/basic/slime/get_status_tab_items()
 	. = ..()
 	if(!docile)
 		. += "Nutrition: [nutrition]/[get_max_nutrition()]"
@@ -248,12 +253,12 @@
 			. += "Power Level: [powerlevel]"
 
 
-/mob/living/simple_animal/slime/adjustFireLoss(amount, updating_health = TRUE, forced = FALSE)
+/mob/living/basic/slime/adjustFireLoss(amount, updating_health = TRUE, forced = FALSE)
 	if(!forced)
 		amount = -abs(amount)
 	return ..() //Heals them
 
-/mob/living/simple_animal/slime/bullet_act(obj/projectile/Proj, def_zone, piercing_hit = FALSE)
+/mob/living/basic/slime/bullet_act(obj/projectile/Proj, def_zone, piercing_hit = FALSE)
 	attacked += 10
 	if((Proj.damage_type == BURN))
 		adjustBruteLoss(-abs(Proj.damage)) //fire projectiles heals slimes.
@@ -262,29 +267,29 @@
 		. = ..(Proj)
 	. = . || BULLET_ACT_BLOCK
 
-/mob/living/simple_animal/slime/emp_act(severity)
+/mob/living/basic/slime/emp_act(severity)
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
 		return
 	powerlevel = 0 // oh no, the power!
 
-/mob/living/simple_animal/slime/MouseDrop(atom/movable/A as mob|obj)
+/mob/living/basic/slime/MouseDrop(atom/movable/A as mob|obj)
 	if(isliving(A) && A != src && usr == src)
 		var/mob/living/Food = A
 		if(CanFeedon(Food))
 			Feedon(Food)
 	return ..()
 
-/mob/living/simple_animal/slime/doUnEquip(obj/item/I, force, newloc, no_move, invdrop = TRUE, silent = FALSE)
+/mob/living/basic/slime/doUnEquip(obj/item/I, force, newloc, no_move, invdrop = TRUE, silent = FALSE)
 	return
 
-/mob/living/simple_animal/slime/start_pulling(atom/movable/AM, state, force = move_force, supress_message = FALSE)
+/mob/living/basic/slime/start_pulling(atom/movable/AM, state, force = move_force, supress_message = FALSE)
 	return
 
-/mob/living/simple_animal/slime/attack_ui(slot, params)
+/mob/living/basic/slime/attack_ui(slot, params)
 	return
 
-/mob/living/simple_animal/slime/attack_slime(mob/living/simple_animal/slime/M, list/modifiers)
+/mob/living/basic/slime/attack_slime(mob/living/basic/slime/M, list/modifiers)
 	if(..()) //successful slime attack
 		if(M == src)
 			return
@@ -301,27 +306,29 @@
 			M.adjustBruteLoss(-10 + (-10 * M.is_adult))
 			M.updatehealth()
 
-/mob/living/simple_animal/slime/attack_animal(mob/living/simple_animal/user, list/modifiers)
+
+/mob/living/basic/slime/attack_animal(mob/living/basic/user, list/modifiers)
 	. = ..()
 	if(.)
 		attacked += 10
 
 
-/mob/living/simple_animal/slime/attack_paw(mob/living/carbon/human/user, list/modifiers)
+/mob/living/basic/slime/attack_paw(mob/living/carbon/human/user, list/modifiers)
 	if(..()) //successful monkey bite.
 		attacked += 10
 
-/mob/living/simple_animal/slime/attack_larva(mob/living/carbon/alien/larva/L, list/modifiers)
+/mob/living/basic/slime/attack_larva(mob/living/carbon/alien/larva/L, list/modifiers)
 	if(..()) //successful larva bite.
 		attacked += 10
 
-/mob/living/simple_animal/slime/attack_hulk(mob/living/carbon/human/user)
+/mob/living/basic/slime/attack_hulk(mob/living/carbon/human/user)
 	. = ..()
 	if(!.)
 		return
 	discipline_slime(user)
 
-/mob/living/simple_animal/slime/attack_hand(mob/living/carbon/human/user, list/modifiers)
+
+/mob/living/basic/slime/attack_hand(mob/living/carbon/human/user, list/modifiers)
 	if(buckled)
 		user.do_attack_animation(src, ATTACK_EFFECT_DISARM)
 		if(buckled == user)
@@ -358,13 +365,13 @@
 		if(..()) //successful attack
 			attacked += 10
 
-/mob/living/simple_animal/slime/attack_alien(mob/living/carbon/alien/adult/user, list/modifiers)
+/mob/living/basic/slime/attack_alien(mob/living/carbon/alien/adult/user, list/modifiers)
 	if(..()) //if harm or disarm intent.
 		attacked += 10
 		discipline_slime(user)
 
 
-/mob/living/simple_animal/slime/attackby(obj/item/W, mob/living/user, params)
+/mob/living/basic/slime/attackby(obj/item/W, mob/living/user, params)
 	if(stat == DEAD && surgeries.len)
 		var/list/modifiers = params2list(params)
 		if(!user.combat_mode || (LAZYACCESS(modifiers, RIGHT_CLICK)))
@@ -420,7 +427,7 @@
 		return
 	..()
 
-/mob/living/simple_animal/slime/proc/spawn_corecross()
+/mob/living/basic/slime/proc/spawn_corecross()
 	var/static/list/crossbreeds = subtypesof(/obj/item/slimecross)
 	visible_message(span_danger("[src] shudders, its mutated core consuming the rest of its body!"))
 	playsound(src, 'sound/magic/smoke.ogg', 50, TRUE)
@@ -436,7 +443,7 @@
 		visible_message(span_warning("The mutated core shudders, and collapses into a puddle, unable to maintain its form."))
 	qdel(src)
 
-/mob/living/simple_animal/slime/proc/apply_water()
+/mob/living/basic/slime/proc/apply_water()
 	adjustBruteLoss(rand(15,20))
 	if(!client)
 		if(Target) // Like cats
@@ -444,7 +451,7 @@
 			++Discipline
 	return
 
-/mob/living/simple_animal/slime/examine(mob/user)
+/mob/living/basic/slime/examine(mob/user)
 	. = list("<span class='info'>This is [icon2html(src, user)] \a <EM>[src]</EM>!")
 	if (stat == DEAD)
 		. += span_deadsay("It is limp and unresponsive.")
@@ -474,7 +481,7 @@
 
 	. += "</span>"
 
-/mob/living/simple_animal/slime/proc/discipline_slime(mob/user)
+/mob/living/basic/slime/proc/discipline_slime(mob/user)
 	if(stat)
 		return
 
@@ -498,25 +505,22 @@
 	addtimer(CALLBACK(src, PROC_REF(slime_move), user), 0.3 SECONDS)
 
 
-/mob/living/simple_animal/slime/proc/slime_move(mob/user)
+/mob/living/basic/slime/proc/slime_move(mob/user)
 	if(user)
 		step_away(src,user,15)
 
 
-/mob/living/simple_animal/slime/pet
+/mob/living/basic/slime/pet
 	docile = 1
 
-/mob/living/simple_animal/slime/get_mob_buckling_height(mob/seat)
+/mob/living/basic/slime/get_mob_buckling_height(mob/seat)
 	if(..())
 		return 3
 
-/mob/living/simple_animal/slime/random/Initialize(mapload, new_colour, new_is_adult)
+/mob/living/basic/slime/random/Initialize(mapload, new_colour, new_is_adult)
 	. = ..(mapload, pick(slime_colours), prob(50))
 
-/mob/living/simple_animal/slime/add_cell_sample()
-	AddElement(/datum/element/swabable, CELL_LINE_TABLE_SLIME, CELL_VIRUS_TABLE_GENERIC_MOB, 1, 5)
-
-/mob/living/simple_animal/slime/proc/set_target(new_target)
+/mob/living/basic/slime/proc/set_target(new_target)
 	var/old_target = Target
 	Target = new_target
 	if(old_target && !SLIME_CARES_ABOUT(old_target))
@@ -524,7 +528,7 @@
 	if(Target)
 		RegisterSignal(Target, COMSIG_PARENT_QDELETING, PROC_REF(clear_memories_of), override = TRUE)
 
-/mob/living/simple_animal/slime/proc/set_leader(new_leader)
+/mob/living/basic/slime/proc/set_leader(new_leader)
 	var/old_leader = Leader
 	Leader = new_leader
 	if(old_leader && !SLIME_CARES_ABOUT(old_leader))
@@ -532,57 +536,26 @@
 	if(Leader)
 		RegisterSignal(Leader, COMSIG_PARENT_QDELETING, PROC_REF(clear_memories_of), override = TRUE)
 
-/mob/living/simple_animal/slime/proc/add_friendship(new_friend, amount = 1)
-	if(!Friends[new_friend])
-		Friends[new_friend] = 0
-	Friends[new_friend] += amount
-	if(new_friend)
-		RegisterSignal(new_friend, COMSIG_PARENT_QDELETING, PROC_REF(clear_memories_of), override = TRUE)
-
-/mob/living/simple_animal/slime/proc/set_friendship(new_friend, amount = 1)
-	Friends[new_friend] = amount
-	if(new_friend)
-		RegisterSignal(new_friend, COMSIG_PARENT_QDELETING, PROC_REF(clear_memories_of), override = TRUE)
-
-/mob/living/simple_animal/slime/proc/remove_friend(friend)
-	Friends -= friend
-	if(friend && !SLIME_CARES_ABOUT(friend))
-		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
-
-/mob/living/simple_animal/slime/proc/set_friends(new_buds)
+/mob/living/basic/slime/proc/set_friends(new_buds)
 	clear_friends()
 	for(var/mob/friend as anything in new_buds)
 		set_friendship(friend, new_buds[friend])
 
-/mob/living/simple_animal/slime/proc/clear_friends()
+/mob/living/basic/slime/proc/clear_friends()
 	for(var/mob/friend as anything in Friends)
 		remove_friend(friend)
 
-/mob/living/simple_animal/slime/proc/clear_memories_of(datum/source)
-	SIGNAL_HANDLER
-	if(source == Target)
-		set_target(null)
-	if(source == Leader)
-		set_leader(null)
-	remove_friend(source)
-
 #undef SLIME_CARES_ABOUT
 
-
-
-var/AIproc = 0 // determines if the AI loop is activated
-	var/Atkcool = 0 // attack cooldown
-	var/Discipline = 0 // if a slime has been hit with a freeze gun, or wrestled/attacked off a human, they become disciplined and don't attack anymore for a while
 	var/SStun = 0 // stun variable
 
 
-/mob/living/simple_animal/slime/Life(delta_time = SSMOBS_DT, times_fired)
+/mob/living/basic/slime/Life(delta_time = SSMOBS_DT, times_fired)
 	if (notransform)
 		return
 	. = ..()
 	if(!.)
 		return
-
 	if(buckled)
 		handle_feeding(delta_time, times_fired)
 	if(stat) // Slimes in stasis don't lose nutrition, don't change mood and don't respond to speech
@@ -591,6 +564,7 @@ var/AIproc = 0 // determines if the AI loop is activated
 	if(QDELETED(src)) // Stop if the slime split during handle_nutrition()
 		return
 	reagents.remove_all(0.5 * REAGENTS_METABOLISM * reagents.reagent_list.len * delta_time) //Slimes are such snowflakes
+
 	handle_targets(delta_time, times_fired)
 	if(ckey)
 		return
@@ -599,7 +573,7 @@ var/AIproc = 0 // determines if the AI loop is activated
 
 
 // Unlike most of the simple animals, slimes support UNCONSCIOUS. This is an ugly hack.
-/mob/living/simple_animal/slime/update_stat()
+/mob/living/basic/slime/update_stat()
 	switch(stat)
 		if(UNCONSCIOUS, HARD_CRIT)
 			if(health > 0)
@@ -607,16 +581,13 @@ var/AIproc = 0 // determines if the AI loop is activated
 	return ..()
 
 
-/mob/living/simple_animal/slime/proc/AIprocess()  // the master AI process
+/mob/living/basic/slime/proc/AIprocess()  // the master AI process
 
 	if(AIproc || stat || client)
 		return
 
-	var/hungry = 0
-	if (nutrition < get_starve_nutrition())
-		hungry = 2
-	else if (nutrition < get_grow_nutrition() && prob(25) || nutrition < get_hunger_nutrition())
-		hungry = 1
+
+
 
 	AIproc = 1
 
@@ -633,7 +604,7 @@ var/AIproc = 0 // determines if the AI loop is activated
 			break
 
 		if(Target)
-			if(locate(/mob/living/simple_animal/slime) in Target.buckled_mobs)
+			if(locate(/mob/living/basic/slime) in Target.buckled_mobs)
 				set_target(null)
 				AIproc = 0
 				break
@@ -684,7 +655,7 @@ var/AIproc = 0 // determines if the AI loop is activated
 
 	AIproc = 0
 
-/mob/living/simple_animal/slime/handle_environment(datum/gas_mixture/environment, delta_time, times_fired)
+/mob/living/basic/slime/handle_environment(datum/gas_mixture/environment, delta_time, times_fired)
 	var/loc_temp = get_temperature(environment)
 	var/divisor = 10 /// The divisor controls how fast body temperature changes, lower causes faster changes
 
@@ -735,12 +706,12 @@ var/AIproc = 0 // determines if the AI loop is activated
 	updatehealth()
 
 
-/mob/living/simple_animal/slime/handle_status_effects(delta_time, times_fired)
+/mob/living/basic/slime/handle_status_effects(delta_time, times_fired)
 	..()
 	if(!stat && DT_PROB(16, delta_time))
 		adjustBruteLoss(-0.5 * delta_time)
 
-/mob/living/simple_animal/slime/proc/handle_feeding(delta_time, times_fired)
+/mob/living/basic/slime/proc/handle_feeding(delta_time, times_fired)
 	if(!ismob(buckled))
 		return
 	var/mob/M = buckled
@@ -780,7 +751,7 @@ var/AIproc = 0 // determines if the AI loop is activated
 			"A sharp, deep pain bathes every inch of your body!")]</span>")
 
 	else if(isanimal(M))
-		var/mob/living/simple_animal/SA = M
+		var/mob/living/basic/SA = M
 
 		var/totaldamage = 0 //total damage done to this unfortunate animal
 		totaldamage += SA.adjustCloneLoss(rand(2, 4) * 0.5 * delta_time)
@@ -799,7 +770,7 @@ var/AIproc = 0 // determines if the AI loop is activated
 	//Heal yourself.
 	adjustBruteLoss(-1.5 * delta_time)
 
-/mob/living/simple_animal/slime/proc/handle_nutrition(delta_time, times_fired)
+/mob/living/basic/slime/proc/handle_nutrition(delta_time, times_fired)
 
 	if(docile) //God as my witness, I will never go hungry again
 		set_nutrition(700) //fuck you for using the base nutrition var
@@ -824,7 +795,7 @@ var/AIproc = 0 // determines if the AI loop is activated
 		else
 			Evolve()
 
-/mob/living/simple_animal/slime/proc/add_nutrition(nutrition_to_add = 0)
+/mob/living/basic/slime/proc/add_nutrition(nutrition_to_add = 0)
 	set_nutrition(min((nutrition + nutrition_to_add), get_max_nutrition()))
 	if(nutrition >= get_grow_nutrition())
 		if(powerlevel<10)
@@ -836,131 +807,20 @@ var/AIproc = 0 // determines if the AI loop is activated
 				powerlevel++
 
 
+/mob/living/basic/slime/proc/set_nutrition(change)
+	. = ..()
+	if (nutrition < get_starve_nutrition())
+		hungry = 2
+	else if (nutrition < get_grow_nutrition() && prob(25) || nutrition < get_hunger_nutrition())
+		hungry = 1
 
-
-/mob/living/simple_animal/slime/proc/handle_targets(delta_time, times_fired)
-	if(attacked > 50)
-		attacked = 50
-
-	if(attacked > 0)
-		attacked--
-
-	if(Discipline > 0)
-
-		if(Discipline >= 5 && rabid)
-			if(DT_PROB(37, delta_time))
-				rabid = 0
-
-		if(DT_PROB(5, delta_time))
-			Discipline--
-
-	if(!client)
-		if(!(mobility_flags & MOBILITY_MOVE))
-			return
-
-		if(buckled)
-			return // if it's eating someone already, continue eating!
-
-		if(Target)
-			--target_patience
-			if (target_patience <= 0 || SStun > world.time || Discipline || attacked || docile) // Tired of chasing or something draws out attention
-				target_patience = 0
-				set_target(null)
-
-		if(AIproc && SStun > world.time)
-			return
-
-		var/hungry = 0 // determines if the slime is hungry
-
-		if (nutrition < get_starve_nutrition())
-			hungry = 2
-		else if (nutrition < get_grow_nutrition() && DT_PROB(13, delta_time) || nutrition < get_hunger_nutrition())
-			hungry = 1
-
-		if(hungry == 2 && !client) // if a slime is starving, it starts losing its friends
-			if(Friends.len > 0 && DT_PROB(0.5, delta_time))
-				var/mob/nofriend = pick(Friends)
-				add_friendship(nofriend, -1)
-
-		if(!Target)
-			if(will_hunt() && hungry || attacked || rabid) // Only add to the list if we need to
-				var/list/targets = list()
-
-				for(var/mob/living/L in view(7,src))
-
-					if(isslime(L) || L.stat == DEAD) // Ignore other slimes and dead mobs
-						continue
-
-					if(L in Friends) // No eating friends!
-						continue
-
-					var/ally = FALSE
-					for(var/F in faction)
-						if(F == "neutral") //slimes are neutral so other mobs not target them, but they can target neutral mobs
-							continue
-						if(F in L.faction)
-							ally = TRUE
-							break
-					if(ally)
-						continue
-
-					if(issilicon(L) && (rabid || attacked)) // They can't eat silicons, but they can glomp them in defence
-						targets += L // Possible target found!
-
-					if(locate(/mob/living/simple_animal/slime) in L.buckled_mobs) // Only one slime can latch on at a time.
-						continue
-
-					targets += L // Possible target found!
-
-				if(targets.len > 0)
-					if(attacked || rabid || hungry == 2)
-						set_target(targets[1]) // I am attacked and am fighting back or so hungry I don't even care
-					else
-						for(var/mob/living/carbon/C in targets)
-							if(!Discipline && DT_PROB(2.5, delta_time))
-								if(ishuman(C) || isalienadult(C))
-									set_target(C)
-									break
-
-							if(islarva(C) || ismonkey(C))
-								set_target(C)
-								break
-
-			if (Target)
-				target_patience = rand(5, 7)
-				if (is_adult)
-					target_patience += 3
-
-		if(!Target) // If we have no target, we are wandering or following orders
-			if (Leader)
-				if(holding_still)
-					holding_still = max(holding_still - (0.5 * delta_time), 0)
-				else if(!HAS_TRAIT(src, TRAIT_IMMOBILIZED) && isturf(loc))
-					step_to(src, Leader)
-
-			else if(hungry)
-				if (holding_still)
-					holding_still = max(holding_still - (0.5 * hungry * delta_time), 0)
-				else if(!HAS_TRAIT(src, TRAIT_IMMOBILIZED) && isturf(loc) && prob(50))
-					step(src, pick(GLOB.cardinals))
-
-			else
-				if(holding_still)
-					holding_still = max(holding_still - (0.5 * delta_time), 0)
-				else if (docile && pulledby)
-					holding_still = 10
-				else if(!HAS_TRAIT(src, TRAIT_IMMOBILIZED) && isturf(loc) && prob(33))
-					step(src, pick(GLOB.cardinals))
-		else if(!AIproc)
-			INVOKE_ASYNC(src, PROC_REF(AIprocess))
-
-/mob/living/simple_animal/slime/handle_automated_movement()
+/mob/living/basic/slime/handle_automated_movement()
 	return //slime random movement is currently handled in handle_targets()
 
-/mob/living/simple_animal/slime/handle_automated_speech()
+/mob/living/basic/slime/handle_automated_speech()
 	return //slime random speech is currently handled in handle_speech()
 
-/mob/living/simple_animal/slime/proc/handle_mood(delta_time, times_fired)
+/mob/living/basic/slime/proc/handle_mood(delta_time, times_fired)
 	var/newmood = ""
 	if (rabid || attacked)
 		newmood = "angry"
@@ -983,7 +843,7 @@ var/AIproc = 0 // determines if the AI loop is activated
 		mood = newmood
 		regenerate_icons()
 
-/mob/living/simple_animal/slime/proc/handle_speech(delta_time, times_fired)
+/mob/living/basic/slime/proc/handle_speech(delta_time, times_fired)
 	//Speech understanding starts here
 	var/to_say
 	if (speech_buffer.len > 0)
@@ -1155,37 +1015,28 @@ var/AIproc = 0 // determines if the AI loop is activated
 			if(!stat)
 				say (pick(phrases))
 
-/mob/living/simple_animal/slime/proc/get_max_nutrition() // Can't go above it
+/mob/living/basic/slime/proc/get_max_nutrition() // Can't go above it
 	if (is_adult)
 		return 1200
 	else
 		return 1000
 
-/mob/living/simple_animal/slime/proc/get_grow_nutrition() // Above it we grow, below it we can eat
+/mob/living/basic/slime/proc/get_grow_nutrition() // Above it we grow, below it we can eat
 	if (is_adult)
 		return 1000
 	else
 		return 800
 
-/mob/living/simple_animal/slime/proc/get_hunger_nutrition() // Below it we will always eat
+/mob/living/basic/slime/proc/get_hunger_nutrition() // Below it we will always eat
 	if (is_adult)
 		return 600
 	else
 		return 500
 
-/mob/living/simple_animal/slime/proc/get_starve_nutrition() // Below it we will eat before everything else
+/mob/living/basic/slime/proc/get_starve_nutrition() // Below it we will eat before everything else
 	if(is_adult)
 		return 300
 	else
 		return 200
 
-/mob/living/simple_animal/slime/proc/will_hunt(hunger = -1) // Check for being stopped from feeding and chasing
-	if (docile)
-		return FALSE
-	if (hunger == 2 || rabid || attacked)
-		return TRUE
-	if (Leader)
-		return FALSE
-	if (holding_still)
-		return FALSE
-	return TRUE
+

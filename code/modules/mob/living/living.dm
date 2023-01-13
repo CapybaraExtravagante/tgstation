@@ -2410,8 +2410,12 @@ GLOBAL_LIST_EMPTY(fire_appearances)
 	. = ..()
 	add_mood_event("gaming", /datum/mood_event/gaming)
 
-/// Proc for giving a mob a new 'friend', generally used for AI control and targetting. Returns false if already friends.
-/mob/living/proc/befriend(mob/living/new_friend)
+/* Proc for giving a mob a new 'friend', generally used for AI control and targetting.
+Optionally, you can provide an amount of friendship points, this allows arbitrary relationships for things like slimes.
+
+This proc returns FALSE if you're already befriended with the mob, and you did not specify an amount of friendship points
+*/
+/mob/living/proc/raise_friendship(mob/living/new_friend, friendship_points)
 	SHOULD_CALL_PARENT(TRUE)
 	var/friend_ref = REF(new_friend)
 	if (faction.Find(friend_ref))
@@ -2421,13 +2425,22 @@ GLOBAL_LIST_EMPTY(fire_appearances)
 		var/list/friends = ai_controller.blackboard[BB_FRIENDS_LIST]
 		if (!friends)
 			friends = list()
-		friends[WEAKREF(new_friend)] = TRUE
+		if(friendship_points)
+			friends[WEAKREF(new_friend)] = friends[WEAKREF(new_friend)] += friendship_points
+		else
+			friends[WEAKREF(new_friend)] = 1
 		ai_controller.blackboard[BB_FRIENDS_LIST] = friends
 	SEND_SIGNAL(src, COMSIG_LIVING_BEFRIENDED, new_friend)
 	return TRUE
 
-/// Proc for removing a friend you added with the proc 'befriend'. Returns true if you removed a friend.
-/mob/living/proc/unfriend(mob/living/old_friend)
+/* Proc for reducing a friendship you added with the proc 'raise_friendship'.
+Optionally, you can provide an amount of friendship points, this allows arbitrary relationships for things like slimes.
+
+If friendship points go below 0, or if you did not specify an amount of friendship points, the friendship is removed.
+
+Returns true if friendship was ended
+*/
+/mob/living/proc/reduce_friendship(mob/living/old_friend, friendship_points)
 	SHOULD_CALL_PARENT(TRUE)
 	var/friend_ref = REF(old_friend)
 	if (!faction.Find(friend_ref))
@@ -2437,7 +2450,12 @@ GLOBAL_LIST_EMPTY(fire_appearances)
 		var/list/friends = ai_controller.blackboard[BB_FRIENDS_LIST]
 		if (!friends)
 			return
-		friends[WEAKREF(old_friend)] = FALSE
+		if(friendship_points)
+			var/current_friendship = friends[WEAKREF(old_friend)]
+			var/new_friendship = max(0, current_friendship - friendship_points)
+			friends[WEAKREF(old_friend)] = new_friendship
+		else
+			friends[WEAKREF(old_friend)] = 0
 		ai_controller.blackboard[BB_FRIENDS_LIST] = friends
 	SEND_SIGNAL(src, COMSIG_LIVING_UNFRIENDED, old_friend)
 	return TRUE

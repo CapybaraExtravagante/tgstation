@@ -241,3 +241,13 @@
 #define BB_BILEWORM_SPEW_BILE "BB_bileworm_spew_bile"
 #define BB_BILEWORM_RESURFACE "BB_bileworm_resurface"
 #define BB_BILEWORM_DEVOUR "BB_bileworm_devour"
+
+
+///Slime AI Keys
+
+#define BB_SLIME_DOCILE "BB_slime_docile"
+#define BB_SLIME_DISCIPLINE "BB_slime_discipline"
+#define BB_SLIME_ANGER "BB_slime_anger"
+#define BB_SLIME_RABID "BB_slime_rabid"
+#define BB_SLIME_WAITING_PATIENCE "BB_slime_waiting_patience"
+#define BB_SLIME_CHASE_PATIENCE "BB_slime_chase_patience"
