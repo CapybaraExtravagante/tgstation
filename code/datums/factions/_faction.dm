@@ -11,9 +11,18 @@
 	var/icon = "tg-nanotrasen-logo"
 	///Current relationship "tier"
 	var/relation_tier = FACTION_RELATION_LEVEL_NEUTRAL
-	///Messages that get sent out when reaching specific tiers in the faction relation. Only get sent out the first time on reaching this relation tier.______qdel_list_wrapper(list/L)
+	///Messages that get sent out when reaching specific tiers in the faction relation. Only get sent out the first time on reaching this relation tier.
 	var/relation_update_messages = list()
-
+	///Current requests made by this faction
+	var/list/current_requests = list()
+	///Whether or not this faction can make requests
+	var/can_make_requests = TRUE
+	///Minimal time between requests
+	var/min_time_between_requests = 5 MINUTES
+	///Maximum time between requests
+	var/max_time_between_requests = 10 MINUTES
+	//Requests that can be made by this faction. Assoc list of request - weight
+	var/list/possible_requests = list()
 
 /datum/faction/New()
 	. = ..()
@@ -60,34 +69,42 @@
 			relation_update_messages -= relation_tier
 
 /datum/faction/proc/send_request(datum/faction_request/specific_request)
-	new specific_request()
+	current_requests += new specific_request(src)
 
 ///Returns the cost multiplier for a cargo crate sold by this faction.
 /datum/faction/proc/get_cargo_crate_price_mult()
 	switch(relation_tier)
-		if(FACTION_RELATION_LEVEL_HATED to FACTION_RELATION_LEVEL_DISLIKED)
+		if(FACTION_RELATION_LEVEL_HATED)
 			return 2
-		if(FACTION_RELATION_LEVEL_DISLIKED to FACTION_RELATION_LEVEL_DISTRUSTED)
+		if(FACTION_RELATION_LEVEL_DISLIKED)
 			return 1.5
-		if(FACTION_RELATION_LEVEL_DISTRUSTED to FACTION_RELATION_LEVEL_NEUTRAL) // Default level
+		if(FACTION_RELATION_LEVEL_DISTRUSTED)
+			return 1.25
+		if(FACTION_RELATION_LEVEL_NEUTRAL) // Default level
 			return 1
-		if(FACTION_RELATION_LEVEL_NEUTRAL to FACTION_RELATION_LEVEL_APPRECIATED)
+		if(FACTION_RELATION_LEVEL_APPRECIATED)
 			return 0.9
-		if(FACTION_RELATION_LEVEL_APPRECIATED to FACTION_RELATION_LEVEL_BELOVED)
+		if(FACTION_RELATION_LEVEL_FRIENDLY)
 			return 0.8
+		if(FACTION_RELATION_LEVEL_BELOVED)
+			return 0.7
 
 ///Returns the cost multiplier for a shuttle sold by this faction..
 /datum/faction/proc/get_shuttle_price_mult()
 	switch(relation_tier)
-		if(FACTION_RELATION_LEVEL_HATED to FACTION_RELATION_LEVEL_DISLIKED)
+		if(FACTION_RELATION_LEVEL_HATED)
 			return 2
-		if(FACTION_RELATION_LEVEL_DISLIKED to FACTION_RELATION_LEVEL_DISTRUSTED)
+		if(FACTION_RELATION_LEVEL_DISLIKED)
 			return 1.5
-		if(FACTION_RELATION_LEVEL_DISTRUSTED to FACTION_RELATION_LEVEL_NEUTRAL) // Default level
+		if(FACTION_RELATION_LEVEL_DISTRUSTED)
+			return 1.25
+		if(FACTION_RELATION_LEVEL_NEUTRAL) // Default level
 			return 1
-		if(FACTION_RELATION_LEVEL_NEUTRAL to FACTION_RELATION_LEVEL_APPRECIATED)
-			return 0.8
-		if(FACTION_RELATION_LEVEL_APPRECIATED to FACTION_RELATION_LEVEL_BELOVED)
+		if(FACTION_RELATION_LEVEL_APPRECIATED)
+			return 0.9
+		if(FACTION_RELATION_LEVEL_FRIENDLY)
+			return 0.75
+		if(FACTION_RELATION_LEVEL_BELOVED)
 			return 0.6
 
 /datum/faction/nanotrasen
@@ -106,10 +123,6 @@
 		FACTION_RELATION_LEVEL_BELOVED = "You are the most productive crew in this region, god bless you all.",
 	)
 
-/datum/faction/nanotrasen/New()
-	. = ..()
-	send_request(/datum/faction_request/test)
-
 /datum/faction/syndicate
 	name = "The Syndicate"
 	basic_desc = "Our competitors, and often our saboteurs."
@@ -122,6 +135,7 @@
 		FACTION_RELATION_LEVEL_FRIENDLY = "You are making powerful friends, keep it up.",
 		FACTION_RELATION_LEVEL_BELOVED = "You are the best the syndicate has to offer.",
 	)
+	can_make_requests = FALSE //Can't make requests by default.
 
 /datum/faction/ssc
 	name = "Spinward Stellar Coalition"

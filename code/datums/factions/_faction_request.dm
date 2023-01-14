@@ -19,6 +19,7 @@
 /datum/faction_request/New(requesting_faction)
 	. = ..()
 	src.requesting_faction = requesting_faction
+	on_request_created()
 	setup_initial_message()
 
 ///Returns an explanation of the request
@@ -37,14 +38,31 @@
 /datum/faction_request/proc/on_failure(silent)
 	requesting_faction.add_relationship(failure_penalty)
 	priority_announce(get_failure_message(), title, SSstation.announcer.get_rand_report_sound())
+	on_ended()
+
+///Proc that gets ran if a request is completed.
+/datum/faction_request/proc/on_completion()
+	on_ended()
+
+///Proc that gets ran if a request is ended (failure or completion)
+/datum/faction_request/proc/on_ended()
 	qdel(src)
+
+///Handles any generation required on request creation
+/datum/faction_request/proc/on_request_created()
+	return
 
 ///Sends the initial comms message, this will allow users to accept/deny the request.
 /datum/faction_request/proc/setup_initial_message()
-	comms_message = new(title, get_explanation(), list("Accept","Reject"))
+	comms_message = new(title, get_explanation(), list("Accept","Reject"), list("Accept" = CALLBACK(src, PROC_REF(can_be_accepted))))
 	comms_message.answer_callback = CALLBACK(src, PROC_REF(request_answered))
 	comms_message.deletion_callback = CALLBACK(src, PROC_REF(request_deleted))
+	priority_announce(get_explanation(), "New request from [requesting_faction.name]: [title]", SSstation.announcer.get_rand_report_sound())
 	SScommunications.send_message(comms_message, unique = TRUE)
+
+///Returns whether or not the request can be accepted.
+/datum/faction_request/proc/can_be_accepted()
+	return TRUE
 
 ///Gets called when the initial request is accepted or denied.
 /datum/faction_request/proc/request_answered()
@@ -56,10 +74,15 @@
 	comms_message.refresh_message(title, get_explanation(), list("Complete"), list("Complete" = CALLBACK(src, PROC_REF(can_be_handed_in))))
 	comms_message.answer_callback = CALLBACK(src, PROC_REF(request_handed_in))
 
+///Called when the request is officially accepted. Override to start any events if necesary
+/datum/faction_request/proc/request_accepted()
+	return
+
 ///Called by comms_message when handed in
 /datum/faction_request/proc/request_handed_in()
 	if(!can_be_handed_in()) //In case we somehow answered complete but it isnt even done yet.
 		return
+	comms_message.remove_answers()
 
 ///Called by the comms message if the message gets deleted, which is basically a manual cancellation.
 /datum/faction_request/proc/request_deleted()
@@ -67,8 +90,3 @@
 		return
 
 	on_failure(silent = !accepted)
-
-/datum/faction_request/test
-
-/datum/faction_request/test/can_be_handed_in()
-	return TRUE

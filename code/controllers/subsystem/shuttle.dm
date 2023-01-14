@@ -104,7 +104,7 @@ SUBSYSTEM_DEF(shuttle)
 	var/list/hidden_shuttle_turf_images = list()
 
 	/// The current shuttle loan event, if any.
-	var/datum/round_event/shuttle_loan/shuttle_loan
+	var/datum/faction_request/shuttle_loan/shuttle_loan
 
 	/// If the event happens where the crew can purchase shuttle insurance, catastrophe can't run.
 	var/shuttle_insurance = FALSE

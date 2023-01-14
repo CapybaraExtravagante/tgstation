@@ -100,6 +100,7 @@
 
 	// remove any stragglers just in case, and clear the list
 	remove_ripples()
+	SEND_SIGNAL(src, COMSIG_SHUTTLE_DOCKED)
 	return DOCKING_SUCCESS
 
 /obj/docking_port/mobile/proc/preflight_check(list/old_turfs, list/new_turfs, list/areas_to_move, rotation)

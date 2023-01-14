@@ -38,6 +38,8 @@
 	var/list/discount_experiments = list()
 	/// Whether or not this node should show on the wiki
 	var/show_on_wiki = TRUE
+	/// Relationship bonus you get with the primary faction once you unlock this node
+	var/faction_relationship_reward = 0
 
 /datum/techweb_node/error_node
 	id = "ERROR"
@@ -88,11 +90,14 @@
 			if(actual_costs[booster])
 				var/delta = max(0, actual_costs[booster] - 250)
 				actual_costs[booster] -= min(boostlist[booster], delta)
-	
+
 	return actual_costs
 
 /datum/techweb_node/proc/price_display(datum/techweb/TN)
 	return techweb_point_display_generic(get_price(TN))
 
 /datum/techweb_node/proc/on_research() //new proc, not currently in file
+	if(faction_relationship_reward)
+		var/datum/faction/primary_faction = SSfactions.get_primary_faction()
+		primary_faction.add_relationship(faction_relationship_reward)
 	return

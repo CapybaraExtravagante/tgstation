@@ -968,16 +968,20 @@
 
 ///Gives the message new information, new answers, and makes it available again if it was answered.
 /datum/comm_message/proc/refresh_message(new_title, new_content, new_possible_answers, new_answer_conditional_callbacks)
-	answered = FALSE
+	answered = null
 	if(new_title)
 		title = new_title
 	if(new_content)
 		content = new_content
 	if(new_possible_answers)
 		possible_answers = new_possible_answers
-	if(answer_conditional_callbacks)
+	if(new_answer_conditional_callbacks)
 		answer_conditional_callbacks = new_answer_conditional_callbacks
 
+///Removes all answers from the message
+/datum/comm_message/proc/remove_answers()
+	possible_answers = list()
+	answer_conditional_callbacks = list()
 
 #undef IMPORTANT_ACTION_COOLDOWN
 #undef EMERGENCY_ACCESS_COOLDOWN

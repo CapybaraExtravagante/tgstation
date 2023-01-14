@@ -571,6 +571,7 @@ const TechNode = (props, context) => {
   const {
     name,
     description,
+    reputation_reward,
     costs,
     design_ids,
     prereq_ids,
@@ -692,6 +693,15 @@ const TechNode = (props, context) => {
       <Box className="Techweb__NodeDescription" mb={2}>
         {description}
       </Box>
+      {reputation_reward > 0 && (
+        <Box
+          textColor="#00FF00"
+          className="Techweb__NodeRelationshipGain"
+          mb={2}>
+          {'Relationship gain with faction if node researched: ' +
+            reputation_reward}
+        </Box>
+      )}
       <Box className="Techweb__NodeUnlockedDesigns" mb={2}>
         {design_ids.map((k, i) => (
           <Button

@@ -404,6 +404,7 @@
 	id = "adv_biotech"
 	display_name = "Advanced Biotechnology"
 	description = "Advanced Biotechnology"
+	faction_relationship_reward = 3
 	prereq_ids = list("biotech")
 	design_ids = list(
 		"crewpinpointer",
@@ -542,6 +543,7 @@
 	id = "engineering"
 	display_name = "Industrial Engineering"
 	description = "A refresher course on modern engineering technology."
+	faction_relationship_reward = 1
 	prereq_ids = list("base")
 	design_ids = list(
 		"adv_capacitor",
@@ -595,6 +597,7 @@
 	id = "adv_engi"
 	display_name = "Advanced Engineering"
 	description = "Pushing the boundaries of physics, one chainsaw-fist at a time."
+	faction_relationship_reward = 3
 	prereq_ids = list("engineering", "emp_basic")
 	design_ids = list(
 		"HFR_core",
@@ -690,6 +693,7 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 	discount_experiments = list(/datum/experiment/scanning/points/machinery_tiered_scan/tier3_bluespacemachines = 4000)
+	faction_relationship_reward = 3
 
 /datum/techweb_node/micro_bluespace
 	id = "micro_bluespace"
@@ -718,6 +722,7 @@
 		"bag_holding",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+	faction_relationship_reward = 3
 
 /datum/techweb_node/practical_bluespace
 	id = "practical_bluespace"
@@ -769,6 +774,7 @@
 		"desynchronizer",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
+	faction_relationship_reward = 3
 
 
 /////////////////////////plasma tech/////////////////////////
@@ -791,6 +797,7 @@
 		"mech_plasma_cutter",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
+	faction_relationship_reward = 2
 
 /////////////////////////integrated circuits tech/////////////////////////
 
@@ -1390,6 +1397,7 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
 	discount_experiments = list(/datum/experiment/scanning/random/material/hard/one = 5000)
+	faction_relationship_reward = 2
 
 /datum/techweb_node/janitor
 	id = "janitor"
@@ -2057,6 +2065,7 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 	hidden = TRUE
+	faction_relationship_reward = 5
 
 /datum/techweb_node/alientech/on_research() //Unlocks the Zeta shuttle for purchase
 		SSshuttle.shuttle_purchase_requirements_met[SHUTTLE_UNLOCK_ALIENTECH] = TRUE
@@ -2149,6 +2158,7 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
 	hidden = TRUE
+	faction_relationship_reward = -1
 
 /datum/techweb_node/syndicate_basic/New() //Crappy way of making syndicate gear decon supported until there's another way.
 	. = ..()

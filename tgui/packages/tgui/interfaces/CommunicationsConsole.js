@@ -664,6 +664,7 @@ const PageMessages = (props, context) => {
               content={answer}
               color={message.answered === answerIndex + 1 ? 'good' : undefined}
               key={answerIndex}
+              disabled={!message.possibleAnswerAvailability[answer]}
               onClick={
                 message.answered
                   ? undefined

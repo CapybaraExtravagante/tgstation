@@ -127,7 +127,8 @@
 		var/compressed_id = "[compress_id(node.id)]"
 		node_cache[compressed_id] = list(
 			"name" = node.display_name,
-			"description" = node.description
+			"description" = node.description,
+			"reputation_reward" = node.faction_relationship_reward
 		)
 		if (LAZYLEN(node.research_costs))
 			node_cache[compressed_id]["costs"] = list()

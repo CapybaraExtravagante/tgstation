@@ -8,13 +8,9 @@
 #define MY_GOD_JC "bomb"
 #define PAPERS_PLEASE "paperwork"
 
-/datum/round_event_control/shuttle_loan
-	name = "Shuttle Loan"
-	typepath = /datum/round_event/shuttle_loan
-	weight = 0 //Gets requested by factions
-	category = EVENT_CATEGORY_BUREAUCRATIC
-	description = "If cargo accepts the offer, fills the shuttle with loot and/or enemies."
-	///The types of loan offers that the crew can recieve.
+/datum/faction_request/shuttle_loan
+	title = "Shuttle Loan"
+	var/dispatch_type = "none"
 	var/list/shuttle_loan_offers = list(
 		ANTIDOTE_NEEDED,
 		DEPARTMENT_RESUPPLY,
@@ -26,96 +22,80 @@
 		SPIDER_GIFT,
 		PAPERS_PLEASE,
 	)
-	///The types of loan events already run (and to be excluded if the event triggers).
-	var/list/run_events = list()
-	///The admin-selected loan offer ID.
-	var/chosen_event
-
-/datum/round_event_control/shuttle_loan/can_spawn_event(players_amt)
-	. = ..()
-
-	for(var/datum/round_event/running_event in SSevents.running)
-		if(istype(running_event, /datum/round_event/shuttle_loan)) //Make sure two of these don't happen at once.
-			return FALSE
-
-/datum/round_event_control/shuttle_loan/admin_setup()
-	if(!check_rights(R_FUN))
-		return ADMIN_CANCEL_EVENT
-
-	if(tgui_alert(usr, "Select a loan offer?", "Trade Offer:", list("Yes", "No")) == "Yes")
-		chosen_event = tgui_input_list(usr, "What deal would you like to offer the crew?", "Throw them a bone.", shuttle_loan_offers)
-
-	for(var/datum/round_event/shuttle_loan/loan_event in SSevents.running)
-		loan_event.kill() //Force out the old event for a new one to take its place
-
-/datum/round_event/shuttle_loan
-	announce_when = 1
-	end_when = 500
 	var/dispatched = FALSE
-	var/dispatch_type = "none"
-	var/bonus_points = 1000
+	var/supply_points_reward = 1000
+	var/reputation_reward = 2
 	var/thanks_msg = "The cargo shuttle should return in five minutes. Have some supply points for your trouble."
 	var/loan_type //for logging
 
-/datum/round_event/shuttle_loan/setup()
-	for(var/datum/round_event_control/shuttle_loan/loan_event_control in SSevents.control) //We can't call control, because it hasn't been set yet
-		if(loan_event_control.chosen_event) //Pass down the admin selection and clean it for future use.
-			dispatch_type = loan_event_control.chosen_event
-			loan_event_control.chosen_event = null
-		else //Otherwise, generate and pick from the list of offerable offers.
-			var/list/loan_list = list()
-			loan_list += loan_event_control.shuttle_loan_offers
-			var/list/run_events = loan_event_control.run_events //Ask the round_event_control which loans have already been offered
-			loan_list -= run_events //Remove the already offered loans from the candidate list
-			if(!length(loan_list)) //If we somehow run out of loans, they all become available again
-				loan_list += loan_event_control.shuttle_loan_offers
-				run_events.Cut()
-			dispatch_type = pick(loan_list) //Pick a loan to offer
-		loan_event_control.run_events += dispatch_type //Regardless of admin selection, we add the event being run to the run_events list
+/datum/faction_request/shuttle_loan/on_completion(silent)
+	. = ..()
+	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	if(D)
+		D.adjust_money(supply_points_reward)
+	requesting_faction.add_relationship(reputation_reward)
 
-/datum/round_event/shuttle_loan/announce(fake)
-	switch(dispatch_type)
-		if(HIJACK_SYNDIE)
-			priority_announce("Cargo: The syndicate are trying to infiltrate your station. If you let them hijack your cargo shuttle, you'll save us a headache.","CentCom Counterintelligence")
-		if(RUSKY_PARTY)
-			priority_announce("Cargo: A group of angry Russians want to have a party. Can you send them your cargo shuttle then make them disappear?","CentCom Russian Outreach Program")
-		if(SPIDER_GIFT)
-			priority_announce("Cargo: The Spider Clan has sent us a mysterious gift. Can we ship it to you to see what's inside?","CentCom Diplomatic Corps")
-		if(DEPARTMENT_RESUPPLY)
-			priority_announce("Cargo: Seems we've ordered doubles of our department resupply packages this month. Can we send them to you?","CentCom Supply Department")
-			thanks_msg = "The cargo shuttle should return in five minutes."
-			bonus_points = 0
-		if(ANTIDOTE_NEEDED)
-			priority_announce("Cargo: Your station has been chosen for an epidemiological research project. Send us your cargo shuttle to receive your research samples.", "CentCom Research Initiatives")
-		if(PIZZA_DELIVERY)
-			priority_announce("Cargo: It looks like a neighbouring station accidentally delivered their pizza to you instead.", "CentCom Spacepizza Division")
-			thanks_msg = "The cargo shuttle should return in five minutes."
-			bonus_points = 0
-		if(ITS_HIP_TO)
-			priority_announce("Cargo: One of our freighters carrying a bee shipment has been attacked by eco-terrorists. Can you clean up the mess for us?", "CentCom Janitorial Division")
-			bonus_points = 20000 //Toxin bees can be unbeelievably lethal
-		if(MY_GOD_JC)
-			priority_announce("Cargo: We have discovered an active Syndicate bomb near our VIP shuttle's fuel lines. If you feel up to the task, we will pay you for defusing it.", "CentCom Security Division")
-			thanks_msg = "Live explosive ordnance incoming via supply shuttle. Evacuating cargo bay is recommended."
-			bonus_points = 45000 //If you mess up, people die and the shuttle gets turned into swiss cheese
-		if(PAPERS_PLEASE)
-			priority_announce("Cargo: A neighboring station needs some help handling some paperwork. Could you help process it for us?", "CentCom Paperwork Division")
-			thanks_msg = "The cargo shuttle should return in five minutes. Payment will be rendered when the paperwork is processed and returned."
-			bonus_points = 0 //Payout is made when the stamped papers are returned
+/datum/faction_request/shuttle_loan/get_explanation()
+	var/message
+	if(completed)
+		if(dispatch_type == PAPERS_PLEASE)
+			message += "Thanks for taking this paperwork off our hands, be sure to send in the papers to us through your cargo shuttle for some profit"
 		else
-			log_game("Shuttle Loan event could not find [dispatch_type] event to offer.")
-			kill()
-			return
-	SSshuttle.shuttle_loan = src
+			message += "Thank you for letting us use your shuttle."
+		return
+	else if(accepted)
+		return "Use your cargo console to send the shuttle our way. Once that is done the request can be completed in here"
+	else
+		switch(dispatch_type)
+			if(HIJACK_SYNDIE)
+				message += "The syndicate are trying to infiltrate your station. If you let them hijack your cargo shuttle, you'll save us a headache."
+			if(RUSKY_PARTY)
+				message += "A group of angry Russians want to have a party. Can you send them your cargo shuttle then make them disappear?"
+			if(SPIDER_GIFT)
+				message += "The Spider Clan has sent us a mysterious gift. Can we ship it to you to see what's inside?"
+			if(DEPARTMENT_RESUPPLY)
+				message += "Seems we've ordered doubles of our department resupply packages this month. Can we send them to you?"
+			if(ANTIDOTE_NEEDED)
+				message += "Your station has been chosen for an epidemiological research project. Send us your cargo shuttle to receive your research samples."
+			if(PIZZA_DELIVERY)
+				message += "It looks like a neighbouring station accidentally delivered their pizza to you instead."
+			if(ITS_HIP_TO)
+				message += "One of our freighters carrying a bee shipment has been attacked by eco-terrorists. Can you clean up the mess for us?"
+			if(MY_GOD_JC)
+				message += "We have discovered an active Syndicate bomb near our VIP shuttle's fuel lines. If you feel up to the task, we will pay you for defusing it."
+			if(PAPERS_PLEASE)
+				message += "A neighboring station needs some help handling some paperwork. Could you help process it for us?"
 
-/datum/round_event/shuttle_loan/proc/loan_shuttle()
+	if(supply_points_reward)
+		message += " [supply_points_reward] will be deposited into your cargo funds for completing this request."
+	if(supply_points_reward)
+		message += " [reputation_reward] reputation will be gained from completing this request."
+	return message
+
+/datum/faction_request/shuttle_loan/on_request_created()
+	. = ..()
+	dispatch_type = pick(shuttle_loan_offers) //Pick a loan to offer
+	SSshuttle.shuttle_loan = src
+	switch(dispatch_type)
+		if(DEPARTMENT_RESUPPLY)
+			thanks_msg = "The cargo shuttle should return in five minutes."
+			supply_points_reward = 0
+		if(PIZZA_DELIVERY)
+			thanks_msg = "The cargo shuttle should return in five minutes."
+			supply_points_reward = 0
+		if(ITS_HIP_TO)
+			supply_points_reward = 20000 //Toxin bees can be unbeelievably lethal
+		if(MY_GOD_JC)
+			thanks_msg = "Live explosive ordnance incoming via supply shuttle. Evacuating cargo bay is recommended."
+			supply_points_reward = 45000 //If you mess up, people die and the shuttle gets turned into swiss cheese
+		if(PAPERS_PLEASE)
+			thanks_msg = "The cargo shuttle should return in five minutes. Payment will be rendered when the paperwork is processed and returned."
+			supply_points_reward = 0 //Payout is made when the stamped papers are returned
+
+/datum/faction_request/shuttle_loan/proc/loan_shuttle()
 	priority_announce(thanks_msg, "Cargo shuttle commandeered by CentCom.")
 
 	dispatched = TRUE
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-	if(D)
-		D.adjust_money(bonus_points)
-	end_when = activeFor + 1
 
 	SSshuttle.supply.mode = SHUTTLE_CALL
 	SSshuttle.supply.destination = SSshuttle.getDock("cargo_home")
@@ -151,18 +131,13 @@
 			loan_type = "Paperwork shipment"
 
 	log_game("Shuttle loan event firing with type '[loan_type]'.")
+	RegisterSignal(SSshuttle.supply, COMSIG_SHUTTLE_DOCKED, PROC_REF(shuttle_arrived))
 
-/datum/round_event/shuttle_loan/tick()
-	if(dispatched)
-		if(SSshuttle.supply.mode != SHUTTLE_IDLE)
-			end_when = activeFor
-		else
-			end_when = activeFor + 1
-
-/datum/round_event/shuttle_loan/end()
+/datum/faction_request/shuttle_loan/proc/shuttle_arrived()
 	if(SSshuttle.shuttle_loan && SSshuttle.shuttle_loan.dispatched)
 		//make sure the shuttle was dispatched in time
 		SSshuttle.shuttle_loan = null
+		UnregisterSignal(SSshuttle.supply, COMSIG_SHUTTLE_DOCKED)
 
 		var/list/empty_shuttle_turfs = list()
 		var/list/area/shuttle/shuttle_areas = SSshuttle.supply.shuttle_areas
