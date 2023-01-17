@@ -24,5 +24,9 @@ PROCESSING_SUBSYSTEM_DEF(factions)
 /datum/controller/subsystem/processing/factions/proc/get_factions()
 	return factions
 
+/datum/controller/subsystem/processing/factions/proc/get_faction_instance(datum/faction/faction_type)
+	return factions[faction_type]
+
+
 /datum/controller/subsystem/processing/factions/proc/get_primary_faction()
 	return factions[primary_faction]

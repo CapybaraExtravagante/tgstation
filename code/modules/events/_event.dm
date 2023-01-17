@@ -87,6 +87,14 @@
 	triggering = FALSE
 	return EVENT_READY
 
+///Gets a multiplier based on the current relationship with a specific faction (usually the ssc)
+/datum/round_event_control/proc/get_faction_weight_multiplier()
+	return 1
+
+///Gets the weight of the event after including the faction chance multiplier. Should be used when calculating whether to pick the event.
+/datum/round_event_control/proc/get_final_weight()
+	return weight * get_faction_weight_multiplier()
+
 /datum/round_event_control/Topic(href, href_list)
 	..()
 	if(href_list["cancel"])

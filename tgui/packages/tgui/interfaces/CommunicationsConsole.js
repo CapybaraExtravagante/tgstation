@@ -592,10 +592,10 @@ const PageFactions = (props, context) => {
         <Stack vertical fill>
           <Stack.Item>
             <Stack>
-              <Stack.Item verticalAlign="top">
-                <Icon size={3.5} name={Faction.icon} />
-              </Stack.Item>
               <Stack.Item>
+                <Icon name={Faction.icon} size="2" />
+              </Stack.Item>
+              <Stack.Item grow>
                 <Stack vertical fill>
                   <Stack.Item>
                     <Box bold fontSize="28px">

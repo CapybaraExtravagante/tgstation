@@ -50,9 +50,36 @@ SUBSYSTEM_DEF(events)
 		spawnEvent()
 		reschedule()
 
+///Gets a multiplier based on the current relationship with the SSC
+/datum/controller/subsystem/events/proc/get_faction_frequency_multiplier()
+	var/datum/faction/ssc/ssc_faction = SSfactions.get_faction_instance(/datum/faction/ssc) /// The SSC keeps our local space safe, less safe is more events!
+	switch(ssc_faction.relation_tier)
+		if(FACTION_RELATION_LEVEL_HATED)
+			return 0.5
+		if(FACTION_RELATION_LEVEL_DISLIKED)
+			return 0.75
+		if(FACTION_RELATION_LEVEL_DISTRUSTED)
+			return 0.9
+		if(FACTION_RELATION_LEVEL_NEUTRAL) // Default level
+			return 1
+		if(FACTION_RELATION_LEVEL_APPRECIATED)
+			return 1.1
+		if(FACTION_RELATION_LEVEL_FRIENDLY)
+			return 1.2
+		if(FACTION_RELATION_LEVEL_BELOVED)
+			return 1.3
+
+///Gets the lower frequency between events
+/datum/controller/subsystem/events/proc/get_lower_frequency()
+	return frequency_lower * get_faction_frequency_multiplier()
+
+///Gets the upper frequency between events
+/datum/controller/subsystem/events/proc/get_upper_frequency()
+	return frequency_upper * get_faction_frequency_multiplier()
+
 //decides which world.time we should select another random event at.
 /datum/controller/subsystem/events/proc/reschedule()
-	scheduled = world.time + rand(frequency_lower, max(frequency_lower,frequency_upper))
+	scheduled = world.time + rand(get_lower_frequency(), max(get_lower_frequency(),get_upper_frequency()))
 
 //selects a random event based on whether it can occur and it's 'weight'(probability)
 /datum/controller/subsystem/events/proc/spawnEvent()
@@ -67,20 +94,20 @@ SUBSYSTEM_DEF(events)
 	for(var/datum/round_event_control/E in control)
 		if(!E.can_spawn_event(players_amt))
 			continue
-		if(E.weight < 0) //for round-start events etc.
+		if(E.get_final_weight() < 0) //for round-start events etc.
 			var/res = TriggerEvent(E)
 			if(res == EVENT_INTERRUPTED)
 				continue //like it never happened
 			if(res == EVENT_CANT_RUN)
 				return
-		sum_of_weights += E.weight
+		sum_of_weights += E.get_final_weight()
 
 	sum_of_weights = rand(0,sum_of_weights) //reusing this variable. It now represents the 'weight' we want to select
 
 	for(var/datum/round_event_control/E in control)
 		if(!E.can_spawn_event(players_amt))
 			continue
-		sum_of_weights -= E.weight
+		sum_of_weights -= E.get_final_weight()
 
 		if(sum_of_weights <= 0) //we've hit our goal
 			if(TriggerEvent(E))
@@ -96,7 +123,7 @@ SUBSYSTEM_DEF(events)
 
 /datum/controller/subsystem/events/proc/toggleWizardmode()
 	wizardmode = !wizardmode
-	message_admins("Summon Events has been [wizardmode ? "enabled, events will occur every [SSevents.frequency_lower / 600] to [SSevents.frequency_upper / 600] minutes" : "disabled"]!")
+	message_admins("Summon Events has been [wizardmode ? "enabled, events will occur every [SSevents.get_lower_frequency() / 600] to [SSevents.frequency_upper / 600] minutes" : "disabled"]!")
 	log_game("Summon Events was [wizardmode ? "enabled" : "disabled"]!")
 
 

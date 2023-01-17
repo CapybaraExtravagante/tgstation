@@ -21,6 +21,8 @@
 	var/min_time_between_requests = 5 MINUTES
 	///Maximum time between requests
 	var/max_time_between_requests = 10 MINUTES
+	///Timer ID for the request timer
+	var/request_timer_id
 	//Requests that can be made by this faction. Assoc list of request - weight
 	var/list/possible_requests = list()
 
@@ -68,6 +70,15 @@
 
 			relation_update_messages -= relation_tier
 
+///Sets a timer for the next request
+/datum/faction/proc/plan_next_request(datum/faction_request/specific_request)
+
+
+///Picks a random request and sends it to the station
+/datum/faction/proc/make_next_request(datum/faction_request/specific_request)
+
+
+///Sends a specified request to the station
 /datum/faction/proc/send_request(datum/faction_request/specific_request)
 	current_requests += new specific_request(src)
 
@@ -142,4 +153,12 @@
 	basic_desc = "The closest thing we have to a local government. Best to keep these people on our good side if we want to stay safe."
 	faction_color = "rgba(218, 199, 120, 0.7)"
 	current_relationship = 0
-	icon = "phone"
+	icon = "tg-ssc-logo"
+	relation_update_messages = list(
+		FACTION_RELATION_LEVEL_HATED = "Do not expect any protection from us.",
+		FACTION_RELATION_LEVEL_DISLIKED = "Your recent actions have left us with no choice but to send fewer security detachments to your surroundings.",
+		FACTION_RELATION_LEVEL_DISTRUSTED = "Your sector security will decrease if you continue this lack-luster attitude.",
+		FACTION_RELATION_LEVEL_APPRECIATED = "We have increased our surveillance in the area. Keep up the good work.",
+		FACTION_RELATION_LEVEL_FRIENDLY = "Your recent acitons have not gone unnoticed. Extra security detachments have been dispatched to your surroundings.",
+		FACTION_RELATION_LEVEL_BELOVED = "We have sent our best ships to your region to protect your station from harm. Blessings to you all.",
+	)

@@ -19,6 +19,24 @@
 		meteor_list += subtypesof(/obj/effect/meteor)
 		chosen_meteor = tgui_input_list(usr, "Too lazy for buildmode?","Throw meteor", meteor_list)
 
+/datum/round_event_control/stray_meteor/get_faction_weight_multiplier()
+	var/datum/faction/ssc/ssc_faction = SSfactions.get_faction_instance(/datum/faction/ssc) /// The SSC keeps our local space safe, less safe is more events!
+	switch(ssc_faction.relation_tier)
+		if(FACTION_RELATION_LEVEL_HATED)
+			return 3
+		if(FACTION_RELATION_LEVEL_DISLIKED)
+			return 2
+		if(FACTION_RELATION_LEVEL_DISTRUSTED)
+			return 1.5
+		if(FACTION_RELATION_LEVEL_NEUTRAL) // Default level
+			return 1
+		if(FACTION_RELATION_LEVEL_APPRECIATED)
+			return 0.9
+		if(FACTION_RELATION_LEVEL_FRIENDLY)
+			return 0.75
+		if(FACTION_RELATION_LEVEL_BELOVED)
+			return 0.5
+
 /datum/round_event/stray_meteor
 	announce_when = 1
 	fakeable = FALSE //Already faked by meteors that miss

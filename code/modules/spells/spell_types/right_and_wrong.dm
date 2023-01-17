@@ -233,7 +233,7 @@ GLOBAL_LIST_INIT(summoned_magic_objectives, list(
 		else
 			log_game("Summon Events was intensified!")
 
-		message_admins("Summon Events intensifies, events will now occur every [SSevents.frequency_lower / 600] to [SSevents.frequency_upper / 600] minutes.")
+		message_admins("Summon Events intensifies, events will now occur every [SSevents.get_lower_frequency() / 600] to [SSevents.get_upper_frequency() / 600] minutes.")
 
 	// Not in wiz-mode?  Get this show on the road
 	else
