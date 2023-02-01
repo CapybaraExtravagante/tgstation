@@ -39,6 +39,9 @@ Key procs
 	/// Multiplicative slowdown
 	var/multiplicative_slowdown = 0
 
+	/// Multiplicative slowdown after multiplication by the speed ratio. cached for performance
+	var/total_multiplicative_slowdown = 0
+
 	/// Movetypes this applies to
 	var/movetypes = ALL
 
@@ -48,12 +51,23 @@ Key procs
 	/// Other modification datums this conflicts with.
 	var/conflicts_with
 
+	/// Ratio we multiply this movespeed modifier with. Defaults to the global config value, but can be overriden per type on variable movespeed modifiers
+	var/speed_ratio = 1
+
 /datum/movespeed_modifier/New()
 	. = ..()
 	if(!id)
 		id = "[type]" //We turn the path into a string.
+	on_update_multiplicative_slowdown()
 
 GLOBAL_LIST_EMPTY(movespeed_modification_cache)
+
+/datum/movespeed_modifier/proc/set_multiplicative_slowdown(new_multiplicative_slowdown)
+	multiplicative_slowdown = new_multiplicative_slowdown
+	on_update_multiplicative_slowdown()
+
+/datum/movespeed_modifier/proc/on_update_multiplicative_slowdown()
+	total_multiplicative_slowdown = multiplicative_slowdown * speed_ratio
 
 /// Grabs a STATIC MODIFIER datum from cache. YOU MUST NEVER EDIT THESE DATUMS, OR IT WILL AFFECT ANYTHING ELSE USING IT TOO!
 /proc/get_cached_movespeed_modifier(modtype)
@@ -134,7 +148,7 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 			inject = TRUE
 			modified = TRUE
 	if(!isnull(multiplicative_slowdown))
-		final.multiplicative_slowdown = multiplicative_slowdown
+		final.update_multiplicative_slowdown(multiplicative_slowdown)
 		modified = TRUE
 	if(inject)
 		add_movespeed_modifier(final, FALSE)
