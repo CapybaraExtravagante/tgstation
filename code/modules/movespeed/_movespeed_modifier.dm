@@ -69,6 +69,10 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 /datum/movespeed_modifier/proc/on_update_multiplicative_slowdown()
 	total_multiplicative_slowdown = multiplicative_slowdown * speed_ratio
 
+/datum/movespeed_modifier/update_speed_ratio()
+	var/mod = CONFIG_GET(number/movedelay/walk_delay)
+	multiplicative_slowdown = isnum(mod)? mod : initial(multiplicative_slowdown)
+
 /// Grabs a STATIC MODIFIER datum from cache. YOU MUST NEVER EDIT THESE DATUMS, OR IT WILL AFFECT ANYTHING ELSE USING IT TOO!
 /proc/get_cached_movespeed_modifier(modtype)
 	if(!ispath(modtype, /datum/movespeed_modifier))
