@@ -234,6 +234,7 @@
 
 /datum/config_entry/number/global_speed_ratio
 	integer = FALSE
+	default = 1
 
 /datum/config_entry/number/global_speed_ratio/ValidateAndSet()
 	. = ..()
