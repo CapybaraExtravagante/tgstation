@@ -204,7 +204,7 @@
 	/mob/living/carbon/alien/adult/royal/queen = 3
 	)
 
-/datum/config_entry/keyed_list/speed_ratio/ValidateAndSet()
+/datum/config_entry/keyed_list/multiplicative_movespeed/ValidateAndSet()
 	. = ..()
 	if(.)
 		update_config_movespeed_type_lookup(TRUE)
@@ -225,22 +225,29 @@
 /datum/config_entry/keyed_list/speed_ratio/ValidateAndSet()
 	. = ..()
 	if(.)
-		update_config_movespeed_type_lookup(TRUE)
+		update_config_speed_ratio_type_lookup(TRUE)
 
 /datum/config_entry/keyed_list/speed_ratio/vv_edit_var(var_name, var_value)
 	. = ..()
 	if(. && (var_name == NAMEOF(src, config_entry_value)))
-		update_config_movespeed_type_lookup(TRUE)
+		update_config_speed_ratio_type_lookup(TRUE)
 
-/datum/config_entry/keyed_list/speed_ratio/proc/update_movespeed_modifiers
-
-/datum/config_entry/number/global_move_delay_ratio
+/datum/config_entry/number/global_speed_ratio
 	integer = FALSE
 
-/datum/config_entry/number/global_move_delay_ratio/ValidateAndSet()
+/datum/config_entry/number/global_speed_ratio/ValidateAndSet()
 	. = ..()
-	var/datum/movespeed_modifier/config_walk_run/M = get_cached_movespeed_modifier(/datum/movespeed_modifier/config_walk_run/walk)
-	M.sync()
+	update_all_modifiers()
+
+/datum/config_entry/number/global_speed_ratio/vv_edit_var(var_name, var_value)
+	. = ..()
+	update_all_modifiers()
+
+/datum/config_entry/number/global_speed_ratio/proc/update_all_modifiers()
+	for(var/mob/mob_to_update in GLOB.mob_list)
+		for(var/datum/movespeed_modifier/movespeed_mod as anything in mob_to_update.movespeed_modification)
+			movespeed_modification.on_update_slowdown()
+
 
 /datum/config_entry/number/movedelay //Used for modifying movement speed for mobs.
 	abstract_type = /datum/config_entry/number/movedelay

@@ -51,27 +51,28 @@ Key procs
 	/// Other modification datums this conflicts with.
 	var/conflicts_with
 
-	/// Ratio we multiply this movespeed modifier with. Defaults to the global config value, but can be overriden per type on variable movespeed modifiers
-	var/speed_ratio = 1
+	/// Ratio we multiply this movespeed modifier with. Defaults to the global config value, but can be overriden per type in the config. Do not override this yourself or you will get laughed at.
+	var/speed_ratio
 
 /datum/movespeed_modifier/New()
 	. = ..()
 	if(!id)
 		id = "[type]" //We turn the path into a string.
-	on_update_multiplicative_slowdown()
+	on_update_slowdown()
 
 GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 
 /datum/movespeed_modifier/proc/set_multiplicative_slowdown(new_multiplicative_slowdown)
 	multiplicative_slowdown = new_multiplicative_slowdown
-	on_update_multiplicative_slowdown()
+	on_update_slowdown()
 
-/datum/movespeed_modifier/proc/on_update_multiplicative_slowdown()
+/datum/movespeed_modifier/proc/set_speed_ratio(new_speed_ratio)
+	speed_ratio = new_speed_ratio
+	on_update_slowdown()
+
+/datum/movespeed_modifier/proc/on_update_slowdown()
+	var/speed_ratio_to_use = isnum(speed_ratio) ? speed_ratio : CONFIG_GET(number/global_speed_ratio)
 	total_multiplicative_slowdown = multiplicative_slowdown * speed_ratio
-
-/datum/movespeed_modifier/update_speed_ratio()
-	var/mod = CONFIG_GET(number/movedelay/walk_delay)
-	multiplicative_slowdown = isnum(mod)? mod : initial(multiplicative_slowdown)
 
 /// Grabs a STATIC MODIFIER datum from cache. YOU MUST NEVER EDIT THESE DATUMS, OR IT WILL AFFECT ANYTHING ELSE USING IT TOO!
 /proc/get_cached_movespeed_modifier(modtype)
@@ -128,7 +129,7 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 	4. If any of the rest of the args are not null (see: multiplicative slowdown), modify the datum
 	5. Update if necessary
 */
-/mob/proc/add_or_update_variable_movespeed_modifier(datum/movespeed_modifier/type_id_datum, update = TRUE, multiplicative_slowdown)
+/mob/proc/add_or_update_variable_movespeed_modifier(datum/movespeed_modifier/type_id_datum, update = TRUE, multiplicative_slowdown, speed_ratio_override)
 	var/modified = FALSE
 	var/inject = FALSE
 	var/datum/movespeed_modifier/final
@@ -152,8 +153,13 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 			inject = TRUE
 			modified = TRUE
 	if(!isnull(multiplicative_slowdown))
-		final.update_multiplicative_slowdown(multiplicative_slowdown)
+		final.set_multiplicative_slowdown(multiplicative_slowdown)
 		modified = TRUE
+
+	if(!isnull(speed_ratio_override))
+		final.set_speed_ratio(speed_ratio_override)
+		modified = TRUE
+
 	if(inject)
 		add_movespeed_modifier(final, FALSE)
 	if(update && modified)
@@ -174,7 +180,7 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 
 /// Set or update the global movespeed config on a mob
 /mob/proc/update_config_movespeed()
-	add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/mob_config_speedmod, multiplicative_slowdown = get_config_multiplicative_speed())
+	add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/mob_config_speedmod, multiplicative_slowdown = get_config_multiplicative_speed(), speed_ratio_override = get_config_speed_ratio())
 
 /// Get the global config movespeed of a mob by type
 /mob/proc/get_config_multiplicative_speed()
@@ -182,6 +188,13 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 		return 0
 	else
 		return GLOB.mob_config_movespeed_type_lookup[type]
+
+/// Get the global config movespeed ratio of a mob by type
+/mob/proc/get_config_speed_ratio()
+	if(!islist(GLOB.mob_config_movespeedratio_type_lookup) || !GLOB.mob_config_movespeedratio_type_lookup[type])
+		return 0
+	else
+		return GLOB.mob_config_movespeedratio_type_lookup[type]
 
 /// Go through the list of movespeed modifiers and calculate a final movespeed. ANY ADD/REMOVE DONE IN UPDATE_MOVESPEED MUST HAVE THE UPDATE ARGUMENT SET AS FALSE!
 /mob/proc/update_movespeed()

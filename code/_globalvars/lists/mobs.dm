@@ -62,7 +62,11 @@ GLOBAL_LIST_EMPTY(sentient_disease_instances)
 
 GLOBAL_LIST_EMPTY(latejoin_ai_cores)
 
+///Global list for the additive movespeed config
 GLOBAL_LIST_EMPTY(mob_config_movespeed_type_lookup)
+
+///Global list for the speed ratio movespeed config
+GLOBAL_LIST_EMPTY(mob_config_movespeedratio_type_lookup)
 
 GLOBAL_LIST_EMPTY(emote_list)
 
@@ -85,10 +89,26 @@ GLOBAL_LIST_INIT(construct_radial_images, list(
 	if(update_mobs)
 		update_mob_config_movespeeds()
 
+/proc/update_config_speed_ratio_type_lookup(update_mobs = TRUE)
+	var/list/mob_types = list()
+	var/list/entry_value = CONFIG_GET(keyed_list/speed_ratio)
+	for(var/path in entry_value)
+		var/value = entry_value[path]
+		if(!value)
+			continue
+		for(var/subpath in typesof(path))
+			mob_types[subpath] = value
+	GLOB.mob_config_movespeedratio_type_lookup = mob_types
+	if(update_mobs)
+		update_mob_config_movespeeds()
+
 /proc/update_mob_config_movespeeds()
 	for(var/i in GLOB.mob_list)
 		var/mob/M = i
 		M.update_config_movespeed()
+
+/proc/update_global_speed_ratio()
+	for()
 
 /proc/init_emote_list()
 	. = list()
