@@ -72,7 +72,7 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 
 /datum/movespeed_modifier/proc/on_update_slowdown()
 	var/speed_ratio_to_use = isnum(speed_ratio) ? speed_ratio : CONFIG_GET(number/global_speed_ratio)
-	total_multiplicative_slowdown = multiplicative_slowdown * speed_ratio
+	total_multiplicative_slowdown = multiplicative_slowdown * speed_ratio_to_use
 
 /// Grabs a STATIC MODIFIER datum from cache. YOU MUST NEVER EDIT THESE DATUMS, OR IT WILL AFFECT ANYTHING ELSE USING IT TOO!
 /proc/get_cached_movespeed_modifier(modtype)

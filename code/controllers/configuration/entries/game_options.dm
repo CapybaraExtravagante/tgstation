@@ -193,23 +193,17 @@
 
 /datum/config_entry/flag/emojis
 
-/datum/config_entry/keyed_list/multiplicative_movespeed
+/datum/config_entry/keyed_list/additive_movespeed
 	key_mode = KEY_MODE_TYPE
 	value_mode = VALUE_MODE_NUM
-	default = list( //DEFAULTS
-	/mob/living/simple_animal = 1,
-	/mob/living/silicon/pai = 1,
-	/mob/living/carbon/alien/adult/hunter = -1,
-	/mob/living/carbon/alien/adult/royal/praetorian = 1,
-	/mob/living/carbon/alien/adult/royal/queen = 3
-	)
+	default = list()
 
-/datum/config_entry/keyed_list/multiplicative_movespeed/ValidateAndSet()
+/datum/config_entry/keyed_list/additive_movespeed/ValidateAndSet()
 	. = ..()
 	if(.)
 		update_config_movespeed_type_lookup(TRUE)
 
-/datum/config_entry/keyed_list/multiplicative_movespeed/vv_edit_var(var_name, var_value)
+/datum/config_entry/keyed_list/additive_movespeed/vv_edit_var(var_name, var_value)
 	. = ..()
 	if(. && (var_name == NAMEOF(src, config_entry_value)))
 		update_config_movespeed_type_lookup(TRUE)
@@ -218,8 +212,6 @@
 	key_mode = KEY_MODE_TYPE
 	value_mode = VALUE_MODE_NUM
 	default = list( //DEFAULTS
-	/mob/living/simple_animal = 1,
-	/mob/living/silicon/pai = 1,
 	)
 
 /datum/config_entry/keyed_list/speed_ratio/ValidateAndSet()
@@ -246,8 +238,9 @@
 
 /datum/config_entry/number/global_speed_ratio/proc/update_all_modifiers()
 	for(var/mob/mob_to_update in GLOB.mob_list)
-		for(var/datum/movespeed_modifier/movespeed_mod as anything in mob_to_update.movespeed_modification)
-			movespeed_modification.on_update_slowdown()
+		for(var/key as anything in mob_to_update.movespeed_modification)
+			var/datum/movespeed_modifier/movespeed_mod = mob_to_update.movespeed_modification[key]
+			movespeed_mod.on_update_slowdown()
 
 
 /datum/config_entry/number/movedelay //Used for modifying movement speed for mobs.
@@ -280,6 +273,29 @@
 	M.sync()
 
 /////////////////////////////////////////////////Outdated move delay
+/datum/config_entry/keyed_list/multiplicative_movespeed
+	deprecated_by = /datum/config_entry/keyed_list/additive_movespeed
+	key_mode = KEY_MODE_TYPE
+	value_mode = VALUE_MODE_NUM
+	default = list( //DEFAULTS
+	/mob/living/simple_animal = 1,
+	/mob/living/silicon/pai = 1,
+	/mob/living/carbon/alien/adult/hunter = -1,
+	/mob/living/carbon/alien/adult/royal/praetorian = 1,
+	/mob/living/carbon/alien/adult/royal/queen = 3
+	)
+
+/datum/config_entry/keyed_list/multiplicative_movespeed/ValidateAndSet()
+	. = ..()
+	if(.)
+		update_config_movespeed_type_lookup(TRUE)
+
+/datum/config_entry/keyed_list/multiplicative_movespeed/vv_edit_var(var_name, var_value)
+	. = ..()
+	if(. && (var_name == NAMEOF(src, config_entry_value)))
+		update_config_movespeed_type_lookup(TRUE)
+
+
 /datum/config_entry/number/outdated_movedelay
 	deprecated_by = /datum/config_entry/keyed_list/multiplicative_movespeed
 	abstract_type = /datum/config_entry/number/outdated_movedelay

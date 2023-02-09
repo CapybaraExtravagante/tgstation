@@ -107,9 +107,6 @@ GLOBAL_LIST_INIT(construct_radial_images, list(
 		var/mob/M = i
 		M.update_config_movespeed()
 
-/proc/update_global_speed_ratio()
-	for()
-
 /proc/init_emote_list()
 	. = list()
 	for(var/path in subtypesof(/datum/emote))

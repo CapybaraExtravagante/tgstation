@@ -59,11 +59,11 @@
 
 /datum/movespeed_modifier/config_walk_run/walk/sync()
 	var/mod = CONFIG_GET(number/movedelay/walk_delay)
-	multiplicative_slowdown = isnum(mod)? mod : initial(multiplicative_slowdown)
+	set_multiplicative_slowdown(isnum(mod)? mod : initial(multiplicative_slowdown))
 
 /datum/movespeed_modifier/config_walk_run/run/sync()
 	var/mod = CONFIG_GET(number/movedelay/run_delay)
-	multiplicative_slowdown = isnum(mod)? mod : initial(multiplicative_slowdown)
+	set_multiplicative_slowdown(isnum(mod)? mod : initial(multiplicative_slowdown))
 
 /datum/movespeed_modifier/turf_slowdown
 	movetypes = GROUND
