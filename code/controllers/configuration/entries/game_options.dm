@@ -241,6 +241,7 @@
 		for(var/key as anything in mob_to_update.movespeed_modification)
 			var/datum/movespeed_modifier/movespeed_mod = mob_to_update.movespeed_modification[key]
 			movespeed_mod.on_update_slowdown()
+		mob_to_update.update_movespeed()
 
 
 /datum/config_entry/number/movedelay //Used for modifying movement speed for mobs.

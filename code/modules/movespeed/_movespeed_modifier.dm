@@ -70,7 +70,7 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 	speed_ratio = new_speed_ratio
 	on_update_slowdown()
 
-/datum/movespeed_modifier/proc/on_update_slowdown()
+/datum/movespeed_modifier/proc/on_update_slowdowns()
 	var/speed_ratio_to_use = isnum(speed_ratio) ? speed_ratio : CONFIG_GET(number/global_speed_ratio)
 	total_multiplicative_slowdown = multiplicative_slowdown * speed_ratio_to_use
 
